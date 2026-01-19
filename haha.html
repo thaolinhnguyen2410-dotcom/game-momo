@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Game Sắm Tết Thông Minh – Moni</title>
+<style>
+:root{
+  --pink:#ec52a4; --pink2:#ff74bd;
+  --bg:#fde7f2; --card:#fff;
+  --text:#5b1c3a; --muted:#8a4a6b;
+  --r:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg);
+  display:grid;place-items:center;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+}
+.app{
+  width:min(92vw,420px);
+  height:92vh;
+  background:linear-gradient(#ffd3e6,#fde7f2);
+  border-radius:var(--r);
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.top{
+  padding:12px;
+  display:flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,.6);
+}
+.avatar{
+  width:38px;height:38px;border-radius:14px;
+  background:#fff;color:var(--pink);
+  display:grid;place-items:center;font-weight:900;
+}
+.title b{font-size:15px}
+.title div{font-size:12px;color:var(--muted)}
+.screen{flex:1;overflow:auto;padding:14px;display:none}
+.screen.active{display:block}
+.card{
+  background:var(--card);
+  border-radius:var(--r);
+  padding:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+.h1{font-weight:900;margin:0 0 6px}
+.p{font-size:13px;color:var(--muted);margin:0}
+.sp{height:12px}
+.btn{
+  width:100%;border:none;border-radius:14px;
+  padding:12px;background:var(--pink);
+  color:#fff;font-weight:900;
+  cursor:pointer;
+}
+.btn:active{transform:translateY(2px)}
+.btn.secondary{
+  background:#ffe3f0;color:var(--text);
+}
+.list{display:grid;gap:10px;margin-top:10px}
+.item{
+  display:flex;gap:10px;align-items:center;
+  background:#fff;border-radius:14px;
+  padding:10px;
+}
+.item input{accent-color:var(--pink)}
+.badge{
+  margin-left:auto;
+  font-size:12px;
+  padding:6px 10px;
+  background:#ffe3f0;border-radius:999px;
+}
+.chat{display:grid;gap:10px}
+.bubble{
+  padding:12px 14px;border-radius:18px;
+  max-width:85%;font-size:14px;
+}
+.user{margin-left:auto;background:linear-gradient(var(--pink2),var(--pink));color:#fff}
+.bot{background:#fff;color:var(--text)}
+.shopTop{
+  position:sticky;top:0;background:#fff;
+  padding:10px;border-radius:14px;
+  display:flex;justify-content:space-between;
+  z-index:5;
+}
+.money{font-weight:900;color:var(--pink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.cardShop{
+  background:#fff;border-radius:14px;
+  padding:10px;display:flex;flex-direction:column;gap:6px
+}
+.buy{margin-top:auto}
+.side{
+  margin-top:10px;
+  background:#fff;border-radius:14px;padding:10px
+}
+.bag{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.bag li{
+  display:flex;justify-content:space-between;
+  background:#fde7f2;border-radius:12px;
+  padding:8px;font-size:13px
+}
+.result{text-align:center}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.badges span{
+  background:#fff;border-radius:999px;
+  padding:6px 10px;font-size:12px;font-weight:700
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div class="avatar">m</div>
+    <div class="title">
+      <b>Trợ thủ AI – Moni</b>
+      <div>Sắm Tết thông minh</div>
+    </div>
+  </div>
+
+  <!-- MODE -->
+  <div class="screen active" id="mode">
+    <div class="card">
+      <div class="h1">Chọn chế độ</div>
+      <p class="p">Chi tiêu hợp lý để nhận voucher</p>
+    </div>
+    <div class="sp"></div>
+    <button class="btn" onclick="start('solo')">Cá nhân (20k / 30k)</button>
+    <div class="sp"></div>
+    <button class="btn" onclick="start('group')">Nhóm (50k / 80k)</button>
+  </div>
+
+  <!-- LIST -->
+  <div class="screen" id="list">
+    <div class="card">
+      <div class="h1">Danh sách mua Tết</div>
+      <div class="list" id="check"></div>
+      <div class="sp"></div>
+      <button class="btn" onclick="toBudget()">Tiếp theo</button>
+    </div>
+  </div>
+
+  <!-- BUDGET -->
+  <div class="screen" id="budget">
+    <div class="card">
+      <div class="chat">
+        <div class="bubble user" id="uText"></div>
+        <div class="bubble bot" id="bText"></div>
+      </div>
+      <div class="sp"></div>
+      <button class="btn" onclick="show('shop')">Vào shop</button>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="screen" id="shop">
+    <div class="shopTop">
+      <b>Shop</b>
+      <div>Còn: <span class="money" id="money"></span></div>
+    </div>
+
+    <div class="grid" id="shopGrid"></div>
+
+    <div class="side">
+      <b>Giỏ hàng</b>
+      <ul class="bag" id="bag"></ul>
+      <div class="sp"></div>
+      <div id="moni"></div>
+      <div class="sp"></div>
+      <button class="btn" onclick="finish()">Chấm điểm</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="result">
+    <div class="card result">
+      <div class="h1" id="resTitle"></div>
+      <p class="p" id="resDesc"></p>
+      <div class="badges" id="badges"></div>
+      <div class="sp"></div>
+      <div class="h1" id="voucher"></div>
+      <div class="sp"></div>
+      <button class="btn secondary" onclick="location.reload()">Chơi lại</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const items=[
+  "Cây đào","Cây quất","Áo dài","Mứt Tết","Bánh chưng","Bao lì xì"
+];
+const prices={
+  "Tiết kiệm":50000,
+  "Vừa đủ":120000,
+  "Xịn":220000
+};
+let mode="",need=[],budget=0,money=0,bag=[];
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function start(m){
+  mode=m; show("list");
+  const c=document.getElementById("check");
+  c.innerHTML="";
+  items.forEach(i=>{
+    c.innerHTML+=`
+      <label class="item">
+        <input type="checkbox" value="${i}">
+        <div>${i}</div>
+        <div class="badge">Gợi ý: Vừa đủ</div>
+      </label>`;
+  });
+}
+function toBudget(){
+  need=[...document.querySelectorAll("input:checked")].map(i=>i.value);
+  if(!need.length) return alert("Tick ít nhất 1 món nha!");
+  budget=200000+need.length*(mode==="group"?140000:100000);
+  budget+=Math.floor(Math.random()*50000);
+  money=budget;
+  document.getElementById("uText").innerText="Mình muốn mua: "+need.join(", ");
+  document.getElementById("bText").innerText=
+    `Ngân sách của bạn là ${budget.toLocaleString()}đ.
+     Mẹo: chọn “Vừa đủ” cho 2 món quan trọng để đạt voucher cao.`;
+  show("budget");
+}
+function renderShop(){
+  document.getElementById("money").innerText=money.toLocaleString()+"đ";
+  const g=document.getElementById("shopGrid");
+  g.innerHTML="";
+  need.forEach(n=>{
+    Object.keys(prices).forEach(t=>{
+      g.innerHTML+=`
+      <div class="cardShop">
+        <b>${n}</b>
+        <div>${t} – ${prices[t].toLocaleString()}đ</div>
+        <button class="btn buy" onclick="buy('${n}','${t}')">Mua</button>
+      </div>`;
+    });
+  });
+}
+function buy(n,t){
+  if(money<prices[t]) return;
+  money-=prices[t];
+  bag.push({n,t,p:prices[t]});
+  updateBag();
+  document.getElementById("moni").innerText=
+    t==="Xịn"?"Moni: Món này đắt đó, coi chừng thiếu tiền 😅":
+    "Moni: Ok, lựa chọn hợp lý 👍";
+  renderShop();
+}
+function updateBag(){
+  const b=document.getElementById("bag");
+  b.innerHTML="";
+  bag.forEach((x,i)=>{
+    b.innerHTML+=`
+    <li>${x.n} (${x.t})
+      <button onclick="remove(${i})">X</button>
+    </li>`;
+  });
+}
+function remove(i){
+  money+=bag[i].p;
+  bag.splice(i,1);
+  updateBag(); renderShop();
+}
+function finish(){
+  const spent=budget-money;
+  let good=bag.filter(x=>x.t!=="Tiết kiệm").length;
+  let voucher=0;
+  if(bag.length>=need.length && money>=0){
+    voucher=(mode==="group")
+      ? (good>=2?80000:50000)
+      : (good>=2?30000:20000);
+  }
+  document.getElementById("resTitle").innerText=
+    voucher? "Bạn thắng 🎉":"Bạn thua 😭";
+  document.getElementById("resDesc").innerText=
+    `Chi: ${spent.toLocaleString()}đ / ${budget.toLocaleString()}đ`;
+  document.getElementById("voucher").innerText=
+    voucher?`Voucher ${voucher.toLocaleString()}đ`:"";
+  document.getElementById("badges").innerHTML=
+    good>=2?"<span>Chi tiêu thông minh</span>":"<span>Tiết kiệm quá đà</span>";
+  show("result");
+}
+document.getElementById("shop").addEventListener("show",renderShop);
+show("mode");
+</script>
+</body>
+</html>
