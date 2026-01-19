@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Momo - Sắm Tết</title>
+  <style>
+    :root{
+      --maxw: 480px;
+      --pink: #ec52a4;
+      --bg: #fde7f2;
+      --card: rgba(255,255,255,.88);
+      --text: #5b1c3a;
+      --muted: rgba(91, 28, 58, .65);
+      --shadow: 0 18px 60px rgba(0,0,0,.18);
+      --radius: 18px;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; margin: 0; }
+    body{
+      display:grid;
+      place-items:center;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 16px;
+      color: var(--text);
+    }
+
+    .app{
+      width: min(92vw, var(--maxw));
+      min-height: 78vh;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, #ffd3e6, #fde7f2);
+      position: relative;
+    }
+
+    /* header */
+    .topbar{
+      padding: 14px 14px 10px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      background: rgba(255,255,255,.45);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+    .avatar{
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+      display:grid; place-items:center;
+      font-weight: 900;
+      color: var(--pink);
+    }
+    .title{ line-height: 1.1; }
+    .title b{ font-size: 16px; }
+    .title div{ font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* screens */
+    .screen{
+      display:none;
+      padding: 14px;
+    }
+    .screen.active{ display:block; }
+
+    /* common UI */
+    .panel{
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .spacer{ height: 12px; }
+
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      background: var(--pink);
+      color:#fff;
+      font-weight:800;
+      border-radius: 14px;
+      padding: 12px 14px;
+      width: 100%;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+
+    .btn.secondary{
+      background: rgba(236,82,164,.12);
+      color: var(--text);
+      border: 1px solid rgba(236,82,164,.28);
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .h1{ font-size: 18px; font-weight: 900; margin: 0 0 6px; }
+    .p{ margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
+
+    /* mode screen (optional bg image) */
+    .modeWrap{
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 58vh;
+      background: rgba(255,255,255,.4);
+      border: 1px solid rgba(0,0,0,.05);
+    }
+    .modeBg{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit: cover;
+      opacity: .92;
+      pointer-events:none;
+    }
+    .modeFallback{
+      position:absolute; inset:0;
+      background: radial-gradient(circle at 30% 10%, rgba(255,255,255,.8), rgba(255,255,255,0)),
+                  linear-gradient(180deg, #ffd3e6, #fde7f2);
+    }
+    .modeBtns{
+      position:absolute; left: 14px; right: 14px; bottom: 14px;
+      display:grid; gap: 10px;
+    }
+    .bigBtn{
+      border:none;
+      cursor:pointer;
+      border-radius: 18px;
+      padding: 14px 14px;
+      text-align:left;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      transition: transform .12s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .bigBtn:active{ transform: translateY(2px) scale(.99); }
+    .bigBtn b{ display:block; font-size: 16px; }
+    .bigBtn span{ display:block; font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* checklist */
+    .checklist{
+      display:grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .item input{ width: 18px; height: 18px; accent-color: var(--pink); }
+    .item .name{ font-weight: 900; }
+    .item .sub{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* chat bubble */
+    .chat{
+      display:grid;
+      gap: 10px;
+    }
+    .bubbleRow{
+      display:flex;
+      gap: 10px;
+      align-items:flex-end;
+    }
+    .bubbleRow.right{ justify-content:flex-end; }
+    .bubble{
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.3;
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .bubble.user{
+      background: linear-gradient(180deg, #ff5fb2, #ec52a4);
+      color: #fff;
+      border-top-right-radius: 8px;
+    }
+    .bubble.bot{
+      background: rgba(255,255,255,.92);
+      color: var(--text);
+      border-top-left-radius: 8px;
+    }
+    .monoSmall{ font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* shop */
+    .shopHeader{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .money{
+      font-weight: 1000;
+      color: #7a1e4c;
+    }
+    .tabs{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .tab{
+      border:none;
+      cursor:pointer;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-weight: 800;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+    }
+    .tab.active{
+      background: rgba(236,82,164,.16);
+      border-color: rgba(236,82,164,.35);
+      color: var(--text);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .cardShop{
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cardShop b{ font-size: 14px; }
+    .price{ color: var(--muted); font-weight: 900; }
+    .buy{
+      margin-top:auto;
+      border:none;
+      cursor:pointer;
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-weight: 900;
+      background: var(--pink);
+      color: #fff;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .buy:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+    .buy:disabled{
+      background: rgba(236,82,164,.35);
+      cursor:not-allowed;
+    }
+
+    .bag{
+      margin-top: 12px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .bag ul{
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footerActions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="avatar">m</div>
+      <div class="title">
+        <b>Trợ thủ AI - Moni</b>
+        <div>Trợ thủ AI cá nhân của bạn</div>
+      </div>
+      <div style="margin-left:auto" class="row">
+        <span class="chip" id="modeChip">Chưa chọn chế độ</span>
+      </div>
+    </div>
+
+    <!-- Screen 1: Mode -->
+    <section class="screen active" id="screen-mode">
+      <div class="panel">
+        <div class="h1">Chọn chế độ chơi</div>
+        <p class="p">Chọn <b>Cá nhân</b> hoặc <b>Nhóm bạn</b> để bắt đầu sắm Tết nhé.</p>
+      </div>
+      <div class="spacer"></div>
+
+      <div class="modeWrap">
+        <!-- nếu có ảnh assets/mode-select.png thì sẽ hiện -->
+        <div class="modeFallback"></div>
+        <img class="modeBg" src="./assets/mode-select.png" alt="" onerror="this.style.display='none'" />
+
+        <div class="modeBtns">
+          <button class="bigBtn" id="btnSolo" type="button">
+            <b>Cá nhân</b>
+            <span>Chơi một mình, lập kế hoạch sắm Tết</span>
+          </button>
+          <button class="bigBtn" id="btnGroup" type="button">
+            <b>Nhóm bạn</b>
+            <span>Chơi cùng bạn bè, cùng nhau sắm Tết</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Checklist -->
+    <section class="screen" id="screen-list">
+      <div class="panel">
+        <div class="h1">Checklist đồ sắm Tết</div>
+        <p class="p">Tick những món bạn định mua. Xong bấm <b>Tiếp theo</b>.</p>
+
+        <div class="checklist" id="checklist"></div>
+
+        <div class="spacer"></div>
+        <button class="btn" id="btnNextBudget" type="button">Tiếp theo</button>
+        <div class="spacer"></div>
+        <button class="btn secondary" id="btnBackMode" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <!-- Screen 3: Moni budget reply -->
+    <section class="screen" id="screen-budget">
+      <div class="panel">
+        <div class="chat">
+          <div class="bubbleRow right">
+            <div class="bubble user" id="userBubble"></div>
+          </div>
+
+          <div class="bubbleRow">
+            <div class="avatar" style="width:34px;height:34px;border-radius:12px;">m</div>
+            <div>
+              <div class="bubble bot" id="botBubble"></div>
+              <div class="monoSmall">Now</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn" id="btnEnterShop" type="button">Vào shop</button>
+        <div class="spacer"></div>
+        <button class="btn secondary" id="btnBackList" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: Shop -->
+    <section class="screen" id="screen-shop">
+      <div class="panel">
+        <div class="shopHeader">
+          <div>
+            <div class="h1" style="margin:0">Shop sắm Tết</div>
+            <div class="p" style="margin-top:4px">Chọn món và bấm mua. Tiền sẽ trừ dần.</div>
+          </div>
+          <div class="chip">
+            Còn lại: <span class="money" id="moneyLeft">0đ</span>
+          </div>
+        </div>
+
+        <div class="tabs" id="tabs"></div>
+        <div class="grid" id="shopGrid"></div>
+
+        <div class="bag">
+          <b>Giỏ đồ đã mua</b>
+          <ul id="bagList"></ul>
+        </div>
+
+        <div class="footerActions">
+          <button class="btn secondary" id="btnResetShop" type="button">Chơi lại</button>
+          <button class="btn" id="btnBackBudget" type="button">Quay lại</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // ===== State =====
+    const state = {
+      mode: null,                 // "Cá nhân" | "Nhóm bạn"
+      selected: new Set(),        // checklist item ids
+      budget: 600000,             // default 600k
+      moneyLeft: 600000,
+      bag: []                     // purchased items
+    };
+
+    // ===== Data =====
+    const checklistItems = [
+      { id: "ao-dai", name: "Áo dài", sub: "Diện Tết xinh xắn" },
+      { id: "dao", name: "Cây đào", sub: "Trang trí phòng khách" },
+      { id: "quat", name: "Cây quất", sub: "May mắn, sung túc" },
+      { id: "mut", name: "Mứt Tết", sub: "Đãi khách" },
+      { id: "banh-chung", name: "Bánh chưng", sub: "Món truyền thống" },
+      { id: "hat-dua", name: "Hạt dưa", sub: "Nhâm nhi ngày Tết" },
+      { id: "nuoc-ngot", name: "Nước ngọt", sub: "Tiếp khách" },
+      { id: "bao-li-xi", name: "Bao lì xì", sub: "Lộc đầu năm" }
+    ];
+
+    const shopCatalog = {
+      "Đào": [
+        { sku: "dao-100", name: "Đào mini", price: 100000 },
+        { sku: "dao-200", name: "Đào vừa", price: 200000 },
+        { sku: "dao-300", name: "Đào to", price: 300000 }
+      ],
+      "Quất": [
+        { sku: "quat-120", name: "Quất mini", price: 120000 },
+        { sku: "quat-220", name: "Quất vừa", price: 220000 },
+        { sku: "quat-350", name: "Quất bonsai", price: 350000 }
+      ],
+      "Áo dài": [
+        { sku: "aodai-150", name: "Áo dài basic", price: 150000 },
+        { sku: "aodai-250", name: "Áo dài hoa", price: 250000 },
+        { sku: "aodai-400", name: "Áo dài cao cấp", price: 400000 }
+      ],
+      "Mứt Tết": [
+        { sku: "mut-50", name: "Mứt gừng", price: 50000 },
+        { sku: "mut-80", name: "Mứt dừa", price: 80000 },
+        { sku: "mut-120", name: "Combo mứt", price: 120000 }
+      ],
+      "Đồ ăn": [
+        { sku: "banhchung-90", name: "Bánh chưng", price: 90000 },
+        { sku: "hatdua-35", name: "Hạt dưa", price: 35000 },
+        { sku: "nuocngot-60", name: "Thùng nước ngọt", price: 60000 }
+      ],
+      "Phụ kiện": [
+        { sku: "baolixi-30", name: "Bao lì xì", price: 30000 },
+        { sku: "denday-70", name: "Dây đèn trang trí", price: 70000 },
+        { sku: "decal-40", name: "Decal Tết", price: 40000 }
+      ]
+    };
+
+    // ===== Helpers =====
+    const vnd = (n) => n.toLocaleString("vi-VN") + "đ";
+
+    function showScreen(id){
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function setMode(mode){
+      state.mode = mode;
+      document.getElementById("modeChip").textContent = "Chế độ: " + mode;
+    }
+
+    // ===== Screen 2: Checklist render =====
+    const checklistEl = document.getElementById("checklist");
+    function renderChecklist(){
+      checklistEl.innerHTML = "";
+      checklistItems.forEach(it => {
+        const row = document.createElement("label");
+        row.className = "item";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = state.selected.has(it.id);
+        cb.addEventListener("change", () => {
+          if(cb.checked) state.selected.add(it.id);
+          else state.selected.delete(it.id);
+        });
+
+        const text = document.createElement("div");
+        text.innerHTML = `<div class="name">${it.name}</div><div class="sub">${it.sub}</div>`;
+
+        row.appendChild(cb);
+        row.appendChild(text);
+        checklistEl.appendChild(row);
+      });
+    }
+
+    // ===== Screen 4: Shop render =====
+    const tabsEl = document.getElementById("tabs");
+    const gridEl = document.getElementById("shopGrid");
+    const bagEl = document.getElementById("bagList");
+    const moneyLeftEl = document.getElementById("moneyLeft");
+
+    let currentCategory = Object.keys(shopCatalog)[0];
+
+    function renderTabs(){
+      tabsEl.innerHTML = "";
+      Object.keys(shopCatalog).forEach(cat => {
+        const b = document.createElement("button");
+        b.className = "tab" + (cat === currentCategory ? " active" : "");
+        b.textContent = cat;
+        b.type = "button";
+        b.addEventListener("click", () => {
+          currentCategory = cat;
+          renderTabs();
+          renderGrid();
+        });
+        tabsEl.appendChild(b);
+      });
+    }
+
+    function renderGrid(){
+      gridEl.innerHTML = "";
+      const items = shopCatalog[currentCategory];
+
+      items.forEach(it => {
+        const card = document.createElement("div");
+        card.className = "cardShop";
+
+        const title = document.createElement("b");
+        title.textContent = it.name;
+
+        const price = document.createElement("div");
+        price.className = "price";
+        price.textContent = vnd(it.price);
+
+        const buy = document.createElement("button");
+        buy.className = "buy";
+        buy.type = "button";
+        buy.textContent = "Mua";
+        buy.disabled = (state.moneyLeft < it.price);
+
+        buy.addEventListener("click", () => {
+          if(state.moneyLeft < it.price) return;
+          state.moneyLeft -= it.price;
+          state.bag.push({ ...it, category: currentCategory });
+          updateMoney();
+          renderGrid();
+          renderBag();
+        });
+
+        card.appendChild(title);
+        card.appendChild(price);
+        card.appendChild(buy);
+        gridEl.appendChild(card);
+      });
+    }
+
+    function renderBag(){
+      bagEl.innerHTML = "";
+      if(state.bag.length === 0){
+        const li = document.createElement("li");
+        li.textContent = "Chưa mua gì.";
+        bagEl.appendChild(li);
+        return;
+      }
+      state.bag.forEach(x => {
+        const li = document.createElement("li");
+        li.textContent = `${x.name} (${x.category}) - ${vnd(x.price)}`;
+        bagEl.appendChild(li);
+      });
+    }
+
+    function updateMoney(){
+      moneyLeftEl.textContent = vnd(state.moneyLeft);
+    }
+
+    function resetAll(){
+      state.selected = new Set();
+      state.bag = [];
+      state.budget = 600000;
+      state.moneyLeft = 600000;
+      currentCategory = Object.keys(shopCatalog)[0];
+      updateMoney();
+      renderChecklist();
+      renderTabs();
+      renderGrid();
+      renderBag();
+    }
+
+    // ===== Wire buttons =====
+    document.getElementById("btnSolo").addEventListener("click", () => {
+      setMode("Cá nhân");
+      renderChecklist();
+      showScreen("screen-list");
+    });
+
+    document.getElementById("btnGroup").addEventListener("click", () => {
+      setMode("Nhóm bạn");
+      renderChecklist();
+      showScreen("screen-list");
+    });
+
+    document.getElementById("btnBackMode").addEventListener("click", () => {
+      showScreen("screen-mode");
+    });
+
+    document.getElementById("btnNextBudget").addEventListener("click", () => {
+      // tạo câu user: list tick
+      const names = checklistItems
+        .filter(x => state.selected.has(x.id))
+        .map(x => x.name);
+
+      const userText = names.length
+        ? `Mình muốn mua đồ Tết: ${names.join(", ")}.`
+        : "Mình muốn mua đồ Tết (chưa chọn món nào).";
+
+      document.getElementById("userBubble").textContent = userText;
+
+      // bot budget (đúng yêu cầu: “Bạn có 600.000đ để mua đồ nhé!”)
+      document.getElementById("botBubble").innerHTML =
+        `Bạn có <b>${state.budget.toLocaleString("vi-VN")}đ</b> để mua đồ nhé!`;
+
+      showScreen("screen-budget");
+    });
+
+    document.getElementById("btnBackList").addEventListener("click", () => {
+      showScreen("screen-list");
+    });
+
+    document.getElementById("btnEnterShop").addEventListener("click", () => {
+      // vào shop reset money theo budget
+      state.moneyLeft = state.budget;
+      updateMoney();
+      renderTabs();
+      renderGrid();
+      renderBag();
+      showScreen("screen-shop");
+    });
+
+    document.getElementById("btnBackBudget").addEventListener("click", () => {
+      showScreen("screen-budget");
+    });
+
+    document.getElementById("btnResetShop").addEventListener("click", () => {
+      resetAll();
+      showScreen("screen-mode");
+      document.getElementById("modeChip").textContent = "Chưa chọn chế độ";
+      state.mode = null;
+    });
+
+    // init
+    resetAll();
+  </script>
+</body>
+</html>
