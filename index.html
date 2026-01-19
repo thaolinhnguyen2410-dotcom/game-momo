@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Momo Game - Chọn chế độ chơi</title>
+  <style>
+    :root { --maxw: 480px; }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body{
+      display: grid;
+      place-items: center;
+      background: #f7cfe0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 16px;
+    }
+
+    /* Khung màn hình game dọc */
+    .frame{
+      position: relative;
+      width: min(92vw, var(--maxw));
+      aspect-ratio: 3 / 4;         /* giữ dáng màn hình dọc */
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      background: #ffd3e6;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    /* Ảnh nền màn hình */
+    .screen{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    /* Hotspot trong suốt để bấm */
+    .hotspot{
+      position: absolute;
+      background: rgba(255,255,255,0);
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      border-radius: 18px;
+      outline: none;
+    }
+
+    /* Focus để test */
+    .hotspot:focus-visible{
+      box-shadow: 0 0 0 4px rgba(255,255,255,.92),
+                  0 0 0 8px rgba(236, 82, 164, .55);
+    }
+
+    @media (hover:hover){
+      .hotspot:hover{ background: rgba(255,255,255,.06); }
+    }
+
+    /*
+      VÙNG BẤM (theo %)
+      Nếu ảnh bạn crop khác chút, chỉ cần chỉnh các % này.
+    */
+    .hotspot-solo{
+      left: 7%;
+      right: 7%;
+      top: 25%;
+      height: 22%;
+    }
+    .hotspot-group{
+      left: 7%;
+      right: 7%;
+      top: 63%;
+      height: 26%;
+    }
+
+    /* Overlay màn tiếp theo (demo) */
+    .overlay{
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(255, 210, 230, .72);
+      backdrop-filter: blur(6px);
+    }
+    .overlay.show{ display: grid; }
+
+    .card{
+      width: min(86%, 360px);
+      background: rgba(255,255,255,.85);
+      border-radius: 18px;
+      padding: 18px 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
+      text-align: center;
+    }
+    .card h2{
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: #7a1e4c;
+    }
+    .card p{
+      margin: 0 0 14px;
+      color: #6a2a4a;
+      line-height: 1.35;
+      font-size: 14px;
+    }
+    .btn{
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      background: #ec52a4;
+      color: white;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 14px;
+      width: 100%;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .small{
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: .8;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="frame" aria-label="Màn hình chọn chế độ chơi">
+    <!-- ĐỔI/ĐẢM BẢO ảnh nằm đúng đường dẫn này -->
+    <img class="screen" src="./assets/mode-select.png" alt="Chọn chế độ chơi" />
+
+    <!-- Vùng bấm -->
+    <button class="hotspot hotspot-solo" type="button" aria-label="Chọn chế độ Cá nhân"></button>
+    <button class="hotspot hotspot-group" type="button" aria-label="Chọn chế độ Nhóm bạn"></button>
+
+    <!-- Demo màn tiếp theo -->
+    <div class="overlay" id="overlay">
+      <div class="card" role="dialog" aria-modal="true">
+        <h2 id="modeTitle">Bạn đã chọn</h2>
+        <p id="modeDesc">Chỗ này là nơi bạn nối sang màn tiếp theo của game.</p>
+        <button class="btn" id="backBtn">Quay lại</button>
+        <div class="small">Tip: Bạn có thể thay phần này bằng điều hướng sang trang khác / game engine.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const soloBtn = document.querySelector(".hotspot-solo");
+    const groupBtn = document.querySelector(".hotspot-group");
+
+    const overlay = document.getElementById("overlay");
+    const modeTitle = document.getElementById("modeTitle");
+    const modeDesc = document.getElementById("modeDesc");
+    const backBtn = document.getElementById("backBtn");
+
+    function openOverlay(title, desc){
+      modeTitle.textContent = title;
+      modeDesc.textContent = desc;
+      overlay.classList.add("show");
+      backBtn.focus();
+    }
+
+    function closeOverlay(){
+      overlay.classList.remove("show");
+    }
+
+    soloBtn.addEventListener("click", () => {
+      openOverlay(
+        "Chế độ: Cá nhân",
+        "Tiếp theo bạn có thể tạo màn: chọn level / bắt đầu chơi / hướng dẫn."
+      );
+    });
+
+    groupBtn.addEventListener("click", () => {
+      openOverlay(
+        "Chế độ: Nhóm bạn",
+        "Tiếp theo bạn có thể tạo màn: tạo phòng / nhập mã phòng / mời bạn."
+      );
+    });
+
+    backBtn.addEventListener("click", closeOverlay);
+
+    // bấm ra ngoài để đóng
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    // ESC để đóng
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeOverlay();
+    });
+  </script>
+</body>
+</html>
