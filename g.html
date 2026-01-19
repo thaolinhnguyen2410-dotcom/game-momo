@@ -1,0 +1,531 @@
+<script>
+/* =========================
+   DATA + GAME DESIGN
+========================= */
+const ITEMS = [
+  { id:"banh-chung", name:"Bánh chưng", important:true, note:"Món Tết truyền thống – ưu tiên chất lượng." },
+  { id:"dao", name:"Cây đào", important:true, note:"Trang trí Tết – đẹp vừa đủ là ổn." },
+  { id:"quat", name:"Cây quất", important:true, note:"May mắn – đừng mua quá rẻ." },
+  { id:"ao-dai", name:"Áo dài", important:true, note:"Diện Tết – ưu tiên Thường." },
+  { id:"mut", name:"Mứt Tết", important:false, note:"Có thể tiết kiệm để dồn ngân sách." },
+  { id:"hat-dua", name:"Hạt dưa", important:false, note:"Món phụ – chọn tiết kiệm được." },
+  { id:"bao-li-xi", name:"Bao lì xì", important:false, note:"Món phụ – tiết kiệm ok." },
+  { id:"trang-tri", name:"Trang trí", important:false, note:"Đèn/decal… mua vừa phải." },
+];
+
+const TIERS = [
+  { tier:1, label:"Tiết kiệm", emoji:"🟢", quality:1, priceBase: 60000 },
+  { tier:2, label:"Thường",    emoji:"🟡", quality:2, priceBase: 120000 },
+  { tier:3, label:"Cao cấp",   emoji:"🔴", quality:3, priceBase: 210000 },
+];
+
+const state = {
+  mode: null,
+  room: null,
+  selected: new Set(),
+  requiredNames: [],
+  budget: 0,
+  moneyLeft: 0,
+  bag: [],
+  currentTab: null,
+  adviceMemory: [],
+};
+
+const $ = (id)=>document.getElementById(id);
+const vnd = (n)=> n.toLocaleString("vi-VN") + "đ";
+const randInt = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+function setChip(text){ $("chipTop").textContent = text; }
+
+function slugRoom(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out="";
+  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+
+function renderChecklist(){
+  const el = $("checklist");
+  el.innerHTML = "";
+  ITEMS.forEach(it=>{
+    const row = document.createElement("label");
+    row.className = "item";
+
+    const cb = document.createElement("input");
+    cb.type="checkbox";
+    cb.checked = state.selected.has(it.id);
+    cb.addEventListener("change", ()=>{
+      if(cb.checked) state.selected.add(it.id);
+      else state.selected.delete(it.id);
+      updateNextBtn();
+    });
+
+    const mid = document.createElement("div");
+    mid.innerHTML = `<b>${it.name}${it.important ? " ⭐" : ""}</b><div class="sub">${it.note}</div>`;
+
+    const tag = document.createElement("div");
+    tag.className = "tag badge" + (it.important ? " important":"");
+    tag.textContent = it.important ? "Ưu tiên: Thường" : "Có thể tiết kiệm";
+
+    row.appendChild(cb);
+    row.appendChild(mid);
+    row.appendChild(tag);
+    el.appendChild(row);
+  });
+  updateNextBtn();
+}
+
+function updateNextBtn(){
+  const n = state.selected.size;
+  $("btnToBudget").textContent = n ? `Tiếp theo (đã chọn ${n} món)` : "Tiếp theo";
+}
+
+function computeBudget(){
+  const n = state.selected.size || 1;
+  const base = state.mode === "group" ? 320000 : 260000;
+  const perMin = state.mode === "group" ? 105000 : 85000;
+  const perMax = state.mode === "group" ? 135000 : 115000;
+
+  let budget = base + n * randInt(perMin, perMax);
+  budget += randInt(-20000, 30000);
+  return Math.round(budget/10000)*10000;
+}
+
+function summarizeSelectedNames(){
+  const names = ITEMS.filter(x=>state.selected.has(x.id)).map(x=>x.name);
+  state.requiredNames = names;
+  return names;
+}
+
+function priceFor(itemId, tier){
+  const it = ITEMS.find(x=>x.id===itemId);
+  const t = TIERS.find(x=>x.tier===tier);
+  const impBoost = it.important ? 1.10 : 1.00;
+  const jitter = 1 + randInt(-6, 10)/100;
+  const base = t.priceBase * impBoost * jitter;
+  return Math.round(base/1000)*1000;
+}
+
+function tierInfo(tier){ return TIERS.find(x=>x.tier===tier); }
+
+function requiredCategories(){
+  return ITEMS.filter(x=>state.selected.has(x.id)).map(x=>x.id);
+}
+
+function renderTabs(){
+  const tabsEl = $("tabs");
+  tabsEl.innerHTML="";
+  const ids = requiredCategories();
+  if(!ids.length) return;
+
+  if(!state.currentTab) state.currentTab = ids[0];
+
+  ids.forEach(id=>{
+    const it = ITEMS.find(x=>x.id===id);
+    const b = document.createElement("button");
+    b.className = "tab" + (id===state.currentTab ? " active":"");
+    b.type="button";
+    b.textContent = it.name + (it.important ? " ⭐" : "");
+    b.addEventListener("click", ()=>{
+      state.currentTab = id;
+      renderTabs();
+      renderShopGrid();
+      moniAdvise("tab");
+    });
+    tabsEl.appendChild(b);
+  });
+}
+
+function renderShopGrid(){
+  const grid = $("shopGrid");
+  grid.innerHTML = "";
+
+  const itemId = state.currentTab;
+  const it = ITEMS.find(x=>x.id===itemId);
+
+  [1,2,3].forEach(tier=>{
+    const tInfo = tierInfo(tier);
+    const price = priceFor(itemId, tier);
+
+    const card = document.createElement("div");
+    card.className="cardShop";
+
+    card.innerHTML = `
+      <b>${it.name}</b>
+      <div class="meta">${tInfo.emoji} ${tInfo.label} • Giá: ${vnd(price)}</div>
+      <div class="meta">${
+        tier===1 ? "Rẻ – đủ dùng – dễ thiếu điểm voucher cao"
+        : tier===2 ? "Cân bằng – Moni khuyên chọn"
+        : "Đẹp/xịn – đắt – coi chừng lố ngân sách"
+      }</div>
+    `;
+
+    const buy = document.createElement("button");
+    buy.className="buyBtn";
+    buy.textContent = state.moneyLeft >= price ? "Mua" : "Không đủ tiền";
+    buy.disabled = state.moneyLeft < price;
+    buy.addEventListener("click", ()=> addToBag(itemId, tier, price));
+
+    card.appendChild(buy);
+    grid.appendChild(card);
+  });
+}
+
+function updateMoneyUI(){ $("moneyLeft").textContent = vnd(state.moneyLeft); }
+
+function bestTierBought(itemId){
+  const items = state.bag.filter(x=>x.itemId===itemId);
+  return items.length ? Math.max(...items.map(x=>x.tier)) : 0;
+}
+
+function addToBag(itemId, tier, price){
+  const it = ITEMS.find(x=>x.id===itemId);
+  const tInfo = tierInfo(tier);
+
+  state.moneyLeft -= price;
+  state.bag.push({ itemId, itemName: it.name, tier, label: tInfo.label, price, quality: tInfo.quality });
+
+  updateMoneyUI();
+  renderBag();
+  renderShopGrid();
+  moniAdvise("buy", {itemId, tier, price});
+}
+
+function removeFromBag(index){
+  const removed = state.bag.splice(index,1)[0];
+  state.moneyLeft += removed.price;
+  updateMoneyUI();
+  renderBag();
+  renderShopGrid();
+  moniAdvise("remove", removed);
+}
+
+function renderBag(){
+  const bagEl = $("bagList");
+  bagEl.innerHTML="";
+  if(state.bag.length===0){
+    bagEl.innerHTML = `<li class="bagItem">Chưa mua gì.</li>`;
+    return;
+  }
+  state.bag.forEach((x, idx)=>{
+    const li = document.createElement("li");
+    li.className="bagItem";
+    li.innerHTML = `<div><b>${x.itemName}</b><small>${x.label} • ${vnd(x.price)}</small></div>`;
+    const rm = document.createElement("button");
+    rm.className="removeBtn";
+    rm.textContent="Xoá";
+    rm.addEventListener("click", ()=>removeFromBag(idx));
+    li.appendChild(rm);
+    bagEl.appendChild(li);
+  });
+}
+
+/* ===== Moni Advice ===== */
+function moniSay(text, hint=""){ $("moniText").textContent=text; $("moniHint").textContent=hint; }
+
+function remainingRequired(){
+  return requiredCategories().filter(id=>bestTierBought(id)===0).map(id=>ITEMS.find(x=>x.id===id).name);
+}
+
+function countTier(tier){ return state.bag.filter(x=>x.tier===tier).length; }
+
+function importantProgress(){
+  const importantSelected = ITEMS.filter(x=>x.important && state.selected.has(x.id)).map(x=>x.id);
+  let good=0, total=importantSelected.length;
+  importantSelected.forEach(id=>{ if(bestTierBought(id)>=2) good++; });
+  return {good,total};
+}
+
+function voucherThresholds(){
+  const imp = importantProgress();
+  return { needGood: Math.min(2, imp.total) };
+}
+
+function diversify(lines){
+  const used = new Set(state.adviceMemory.slice(-6));
+  const candidates = lines.filter(x=>!used.has(x));
+  const chosen = candidates.length ? pick(candidates) : pick(lines);
+  state.adviceMemory.push(chosen);
+  return chosen;
+}
+
+function moniAdvise(type, payload){
+  const missing = remainingRequired();
+  const spent = state.budget - state.moneyLeft;
+  const left = state.moneyLeft;
+  const tier1 = countTier(1), tier2 = countTier(2), tier3 = countTier(3);
+  const imp = importantProgress();
+  const { needGood } = voucherThresholds();
+
+  const targetHigh = state.mode === "group" ? "80k" : "30k";
+  const targetMid  = state.mode === "group" ? "50k" : "20k";
+
+  const tooManyCheap = tier1 >= Math.max(3, Math.ceil(state.bag.length*0.6));
+  const overspendRisk = left < Math.round(state.budget*0.20);
+  const hasAnyPremium = tier3 > 0;
+
+  const baseTips = [
+    `Mẹo lấy voucher ${targetHigh}: ưu tiên ${needGood} món ⭐ mức “Thường” trở lên, món phụ chọn “Tiết kiệm”.`,
+    `Muốn ${targetHigh}: nâng “Bánh chưng” hoặc “Áo dài” lên “Thường”, mứt/hạt dưa giữ “Tiết kiệm” để cân tiền.`,
+    `Bạn đang đi đúng hướng. Canh ngân sách và đảm bảo ${needGood} món ⭐ đạt “Thường+” nhé.`,
+  ];
+
+  const missingTips = missing.length
+    ? [
+        `Bạn còn thiếu: ${missing.join(", ")}. Mua đủ checklist trước đã nha.`,
+        `Ưu tiên mua đủ các món còn thiếu: ${missing.join(", ")}.`,
+      ]
+    : [
+        `Checklist đủ rồi ✅ Giờ tối ưu chất lượng để lên voucher ${targetHigh}.`,
+        `Bạn đã mua đủ ✅ Giờ xem lại món ⭐ để đạt ${targetHigh} nha.`,
+      ];
+
+  const cheapTips = [
+    `Bạn đang mua nhiều “Tiết kiệm”. Nếu giữ vậy thường chỉ đạt ${targetMid}.`,
+    `Thử nâng 1–2 món ⭐ lên “Thường” để tăng cơ hội đạt ${targetHigh}.`,
+  ];
+
+  const premiumTips = [
+    `“Cao cấp” đẹp nhưng đắt. Chỉ nên chọn 1 món “Cao cấp”, còn lại “Thường” sẽ an toàn.`,
+    `Nếu đã có món “Cao cấp”, các món còn lại ưu tiên “Thường” để không lố ngân sách.`,
+  ];
+
+  const riskTips = [
+    `Còn lại ${vnd(left)} thôi 😅 Ưu tiên “Thường” cho món ⭐ còn thiếu, món phụ chọn “Tiết kiệm”.`,
+    `Bạn sắp cạn tiền. Gợi ý: Bánh chưng/Đào/Áo dài chọn “Thường”, mứt/bao lì xì chọn “Tiết kiệm”.`,
+  ];
+
+  const removeTips = [
+    `Đã xoá ✅ Hoàn lại ${vnd(payload?.price || 0)}. Giờ bạn cân đối lại được rồi.`,
+    `Xoá hợp lý đó. Mình canh lại ngân sách giúp bạn nhé.`,
+  ];
+
+  let message="", hint="";
+  if(type==="remove"){
+    message = diversify(removeTips);
+    hint = diversify(baseTips);
+  } else if(missing.length){
+    message = diversify(missingTips);
+    hint = diversify(baseTips);
+  } else {
+    if(imp.good < needGood){
+      message = `Muốn voucher ${targetHigh}, bạn cần ${needGood} món ⭐ mức “Thường+”. Hiện tại: ${imp.good}/${needGood}.`;
+      hint = `Gợi ý: nâng “Bánh chưng” hoặc “Áo dài” lên “Thường”, món phụ giữ “Tiết kiệm”.`;
+    } else if(tooManyCheap){
+      message = diversify(cheapTips);
+      hint = `Tiết kiệm ${tier1} • Thường ${tier2} • Cao cấp ${tier3}. Nâng 1 món ⭐ lên “Thường” là đẹp.`;
+    } else if(hasAnyPremium && overspendRisk){
+      message = diversify(premiumTips);
+      hint = diversify(riskTips);
+    } else if(overspendRisk){
+      message = diversify(riskTips);
+      hint = diversify(baseTips);
+    } else {
+      message = diversify(baseTips);
+      hint = `Đã chi: ${vnd(spent)} • Còn: ${vnd(left)} • Món ⭐ “Thường+”: ${imp.good}/${needGood}`;
+    }
+  }
+  moniSay(message, hint);
+}
+
+/* ===== Evaluate + Result ===== */
+function evaluate(){
+  const missing = remainingRequired();
+  if(missing.length){
+    return { ok:false, title:"Chưa xong 😭", desc:`Bạn còn thiếu: ${missing.join(", ")}`, voucher:0, badges:["Thiếu món checklist"] };
+  }
+  if(state.moneyLeft < 0){
+    return { ok:false, title:"Lố ngân sách 😭", desc:"Bạn đã chi vượt ngân sách.", voucher:0, badges:["Vung tay quá trán"] };
+  }
+
+  const imp = importantProgress();
+  const { needGood } = voucherThresholds();
+  const tier1 = countTier(1);
+  const total = state.bag.length || 1;
+  const cheapRatio = tier1 / total;
+
+  const highVoucher = state.mode === "group" ? 80000 : 30000;
+  const midVoucher  = state.mode === "group" ? 50000 : 20000;
+
+  const qualifiesHigh = (imp.good >= needGood) && (cheapRatio <= 0.55);
+  const voucher = qualifiesHigh ? highVoucher : midVoucher;
+
+  const spent = state.budget - state.moneyLeft;
+  const badges = [];
+  badges.push(qualifiesHigh ? "🎯 Chi tiêu thông minh" : "👍 Ổn áp");
+  if(state.moneyLeft >= Math.round(state.budget*0.18)) badges.push("💰 Kỷ luật");
+  if(countTier(3) >= 1) badges.push("✨ Có món xịn");
+  if(cheapRatio >= 0.60) badges.push("🟢 Siêu tiết kiệm");
+
+  return {
+    ok:true,
+    title: qualifiesHigh ? "THẮNG LỚN 🎉" : "THẮNG 👍",
+    desc:`Tổng chi: ${vnd(spent)} / ${vnd(state.budget)} • Còn lại: ${vnd(state.moneyLeft)}`,
+    voucher,
+    badges
+  };
+}
+
+function parseHashRoom(){
+  const h = location.hash || "";
+  const m = h.match(/room=([A-Z0-9]{6})/i);
+  return m ? m[1].toUpperCase() : null;
+}
+
+function setRoom(code){
+  state.room = code;
+  $("roomCode").textContent = code;
+  $("roomInfo").style.display = "block";
+  $("roomTip").textContent = `Share link (demo): ${location.origin + location.pathname}#room=${code}`;
+}
+
+function resetRunKeepMode(){
+  state.selected = new Set();
+  state.requiredNames = [];
+  state.budget = 0;
+  state.moneyLeft = 0;
+  state.bag = [];
+  state.currentTab = null;
+  state.adviceMemory = [];
+  renderChecklist();
+}
+
+function startMode(mode){
+  state.mode = mode;
+  if(mode === "solo"){
+    setChip("Chế độ: Cá nhân");
+    resetRunKeepMode();
+    showScreen("sList");
+  } else {
+    setChip("Chế độ: Nhóm (demo)");
+    showScreen("sRoom");
+  }
+}
+
+function setupBudgetScreen(){
+  const names = summarizeSelectedNames();
+  state.budget = computeBudget();
+  state.moneyLeft = state.budget;
+  state.bag = [];
+  state.currentTab = null;
+  state.adviceMemory = [];
+
+  $("userBubble").textContent = `Mình muốn mua đồ Tết: ${names.join(", ")}.`;
+
+  const targetHigh = state.mode === "group" ? "80k" : "30k";
+  const { needGood } = voucherThresholds();
+
+  $("botBubble").innerHTML =
+    `Okie! Ngân sách của bạn là <b>${vnd(state.budget)}</b> nhé.<br>
+     Mẹo lấy voucher <b>${targetHigh}</b>: chọn ít nhất <b>${needGood}</b> món ⭐ ở mức <b>Thường</b> (hoặc Cao cấp), món phụ có thể Tiết kiệm.`;
+
+  showScreen("sBudget");
+}
+
+function enterShop(){
+  updateMoneyUI();
+  renderTabs();
+  renderShopGrid();
+  renderBag();
+  moniAdvise("tab");
+  showScreen("sShop");
+}
+
+function showResult(res){
+  $("resultTitle").textContent = res.title;
+  $("resultDesc").textContent = res.desc;
+
+  const row = $("badgeRow");
+  row.innerHTML = "";
+  res.badges.forEach(b=>{
+    const s = document.createElement("div");
+    s.className = "badgeChip";
+    s.textContent = b;
+    row.appendChild(s);
+  });
+
+  const vb = $("voucherBox");
+  if(res.ok){
+    vb.style.display = "inline-flex";
+    vb.textContent = `🎁 Voucher: ${vnd(res.voucher)}`;
+  } else {
+    vb.style.display = "none";
+  }
+
+  showScreen("sResult");
+}
+
+/* Wire up */
+$("btnSolo").addEventListener("click", ()=> startMode("solo"));
+$("btnGroup").addEventListener("click", ()=> startMode("group"));
+
+$("btnHow").addEventListener("click", ()=> showScreen("sRules"));
+$("btnRulesBack").addEventListener("click", ()=> showScreen("sMode"));
+
+$("btnBackMode").addEventListener("click", ()=> showScreen("sMode"));
+$("btnBackList").addEventListener("click", ()=> showScreen("sList"));
+
+$("btnToBudget").addEventListener("click", ()=>{
+  if(state.selected.size === 0){ alert("Bạn tick ít nhất 1 món để chơi nha!"); return; }
+  setupBudgetScreen();
+});
+
+$("btnEnterShop").addEventListener("click", enterShop);
+
+$("btnRoomBack").addEventListener("click", ()=> showScreen("sMode"));
+
+$("btnCreateRoom").addEventListener("click", ()=> setRoom(slugRoom()));
+$("btnJoinRoom").addEventListener("click", ()=>{
+  const code = ($("roomInput").value || "").trim().toUpperCase();
+  if(!/^[A-Z0-9]{6}$/.test(code)){ alert("Mã phòng phải 6 ký tự (A-Z, 0-9)."); return; }
+  setRoom(code);
+});
+
+$("btnCopyLink").addEventListener("click", async ()=>{
+  const code = state.room || $("roomCode").textContent;
+  const link = location.origin + location.pathname + `#room=${code}`;
+  try{ await navigator.clipboard.writeText(link); $("roomTip").textContent="✅ Đã copy link (demo)."; }
+  catch{ $("roomTip").textContent="Không copy được. Bạn tự copy link trên thanh địa chỉ nha."; }
+});
+
+$("btnRoomContinue").addEventListener("click", ()=>{
+  resetRunKeepMode();
+  showScreen("sList");
+});
+
+function hardReset(){
+  state.mode = null;
+  state.room = null;
+  setChip("Chưa chọn chế độ");
+  resetRunKeepMode();
+  $("roomInfo").style.display = "none";
+  $("roomInput").value = "";
+  history.replaceState(null,"",location.pathname);
+  showScreen("sMode");
+}
+
+$("btnRestart").addEventListener("click", hardReset);
+$("btnPlayAgain").addEventListener("click", hardReset);
+
+$("btnFinish").addEventListener("click", ()=>{
+  const res = evaluate();
+  if(!res.ok) alert(res.desc);
+  showResult(res);
+});
+
+/* INIT */
+(function init(){
+  renderChecklist();
+  const room = parseHashRoom();
+  if(room){
+    startMode("group");
+    setRoom(room);
+  }
+})();
+</script>
