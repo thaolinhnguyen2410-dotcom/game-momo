@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Momo Game - Chọn chế độ chơi</title>
+
   <style>
     :root { --maxw: 480px; }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
+
     body{
       display: grid;
       place-items: center;
@@ -17,6 +19,7 @@
       padding: 16px;
     }
 
+    /* ===== KHUNG GAME ===== */
     .frame{
       position: relative;
       width: min(92vw, var(--maxw));
@@ -30,6 +33,7 @@
       touch-action: manipulation;
     }
 
+    /* ===== ẢNH NỀN ===== */
     .screen{
       position: absolute;
       inset: 0;
@@ -39,6 +43,7 @@
       pointer-events: none;
     }
 
+    /* ===== NÚT BẤM (HOTSPOT) ===== */
     .hotspot{
       position: absolute;
       background: rgba(255,255,255,0);
@@ -49,17 +54,27 @@
       border-radius: 18px;
       outline: none;
 
-      /* DEBUG: bật viền để thấy vùng bấm (xong thì xoá 2 dòng này) */
-      /* border: 2px dashed rgba(255, 0, 0, 0.55); */
+      transition:
+        transform 0.12s ease,
+        background 0.12s ease;
     }
 
-    .hotspot:focus-visible{
-      box-shadow: 0 0 0 4px rgba(255,255,255,.92),
-                  0 0 0 8px rgba(236, 82, 164, .55);
+    /* CẢM GIÁC LÚN KHI GIỮ */
+    .hotspot:active{
+      transform: scale(0.96) translateY(3px);
+      background: rgba(255,255,255,.08);
     }
 
-    @media (hover:hover){
-      .hotspot:hover{ background: rgba(255,255,255,.06); }
+    /* HIỆU ỨNG NẢY SAU KHI BẤM */
+    @keyframes pressBounce {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(0.95) translateY(3px); }
+      70%  { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .hotspot.press{
+      animation: pressBounce .25s ease;
     }
 
     .hotspot-solo{
@@ -68,6 +83,7 @@
       top: 25%;
       height: 22%;
     }
+
     .hotspot-group{
       left: 7%;
       right: 7%;
@@ -75,6 +91,7 @@
       height: 26%;
     }
 
+    /* ===== OVERLAY ===== */
     .overlay{
       position: absolute;
       inset: 0;
@@ -83,27 +100,31 @@
       background: rgba(255, 210, 230, .72);
       backdrop-filter: blur(6px);
     }
+
     .overlay.show{ display: grid; }
 
     .card{
       width: min(86%, 360px);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.88);
       border-radius: 18px;
       padding: 18px 16px;
       box-shadow: 0 18px 50px rgba(0,0,0,.18);
       text-align: center;
     }
+
     .card h2{
       margin: 0 0 8px;
       font-size: 20px;
       color: #7a1e4c;
     }
+
     .card p{
       margin: 0 0 14px;
       color: #6a2a4a;
-      line-height: 1.35;
       font-size: 14px;
+      line-height: 1.4;
     }
+
     .btn{
       appearance: none;
       border: none;
@@ -115,57 +136,37 @@
       border-radius: 14px;
       width: 100%;
     }
+
     .btn:active{ transform: translateY(1px); }
+
     .small{
       margin-top: 10px;
       font-size: 12px;
       opacity: .8;
     }
-
-    /* Hộp báo lỗi ảnh */
-    .img-error{
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.9);
-      color: #7a1e4c;
-      font-size: 13px;
-      display: none;
-    }
-    .img-error.show{ display:block; }
-    code{ background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 8px; }
   </style>
 </head>
 
 <body>
-  <main class="frame" aria-label="Màn hình chọn chế độ chơi">
-    <img
-      class="screen"
-      src="./assets/mode-select.png"
-      alt="Chọn chế độ chơi"
-      onerror="document.getElementById('imgError').classList.add('show')"
-    />
+  <main class="frame">
 
-    <div class="img-error" id="imgError">
-      ❌ Không load được ảnh. Kiểm tra trong repo có file:
-      <br><code>assets/mode-select.png</code>
-      <br>và tên phải đúng 100% (chữ hoa/thường).
-    </div>
+    <!-- ẢNH NỀN -->
+    <img class="screen" src="./assets/mode-select.png" alt="Chọn chế độ chơi" />
 
-    <button class="hotspot hotspot-solo" type="button" aria-label="Chọn chế độ Cá nhân"></button>
-    <button class="hotspot hotspot-group" type="button" aria-label="Chọn chế độ Nhóm bạn"></button>
+    <!-- NÚT BẤM -->
+    <button class="hotspot hotspot-solo" aria-label="Cá nhân"></button>
+    <button class="hotspot hotspot-group" aria-label="Nhóm bạn"></button>
 
+    <!-- OVERLAY -->
     <div class="overlay" id="overlay">
-      <div class="card" role="dialog" aria-modal="true">
+      <div class="card">
         <h2 id="modeTitle">Bạn đã chọn</h2>
-        <p id="modeDesc">Chỗ này là nơi bạn nối sang màn tiếp theo của game.</p>
+        <p id="modeDesc"></p>
         <button class="btn" id="backBtn">Quay lại</button>
-        <div class="small">Tip: Bạn có thể thay phần này bằng điều hướng sang trang khác / game engine.</div>
+        <div class="small">Demo chuyển màn – bạn có thể thay bằng game thật</div>
       </div>
     </div>
+
   </main>
 
   <script>
@@ -177,33 +178,34 @@
     const modeDesc = document.getElementById("modeDesc");
     const backBtn = document.getElementById("backBtn");
 
+    function press(btn){
+      btn.classList.remove("press");
+      void btn.offsetWidth;
+      btn.classList.add("press");
+    }
+
     function openOverlay(title, desc){
       modeTitle.textContent = title;
       modeDesc.textContent = desc;
       overlay.classList.add("show");
-      backBtn.focus();
-    }
-
-    function closeOverlay(){
-      overlay.classList.remove("show");
     }
 
     soloBtn.addEventListener("click", () => {
-      openOverlay("Chế độ: Cá nhân", "Tiếp theo bạn có thể tạo màn: chọn level / bắt đầu chơi / hướng dẫn.");
+      press(soloBtn);
+      openOverlay("Chế độ: Cá nhân", "Tiếp theo bạn có thể chọn level hoặc bắt đầu chơi.");
     });
 
     groupBtn.addEventListener("click", () => {
-      openOverlay("Chế độ: Nhóm bạn", "Tiếp theo bạn có thể tạo màn: tạo phòng / nhập mã phòng / mời bạn.");
+      press(groupBtn);
+      openOverlay("Chế độ: Nhóm bạn", "Tiếp theo bạn có thể tạo phòng hoặc nhập mã.");
     });
 
-    backBtn.addEventListener("click", closeOverlay);
+    backBtn.addEventListener("click", () => {
+      overlay.classList.remove("show");
+    });
 
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeOverlay();
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeOverlay();
+      if(e.target === overlay) overlay.classList.remove("show");
     });
   </script>
 </body>
