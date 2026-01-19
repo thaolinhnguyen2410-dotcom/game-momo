@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Momo – Sắm Tết Thông Minh</title>
+  <style>
+    :root{
+      --maxw: 480px;
+      --pink: #ec52a4;
+      --pink2:#ff5fb2;
+      --bg: #fde7f2;
+      --card: rgba(255,255,255,.90);
+      --text: #5b1c3a;
+      --muted: rgba(91, 28, 58, .68);
+      --shadow: 0 18px 60px rgba(0,0,0,.18);
+      --r: 18px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; margin:0; }
+    body{
+      display:grid; place-items:center;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 16px;
+      color: var(--text);
+    }
+    .app{
+      width:min(92vw,var(--maxw));
+      min-height: 82vh;
+      border-radius: var(--r);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg,#ffd3e6,#fde7f2);
+      position:relative;
+    }
+    .topbar{
+      padding: 14px 14px 10px;
+      display:flex; gap:10px; align-items:center;
+      background: rgba(255,255,255,.45);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+    .avatar{
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+      display:grid; place-items:center;
+      font-weight: 900;
+      color: var(--pink);
+      flex: 0 0 auto;
+    }
+    .title{ line-height:1.15; }
+    .title b{ font-size:16px; }
+    .title div{ font-size:12px; color: var(--muted); margin-top:3px; }
+    .chip{
+      margin-left:auto;
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.70);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .screen{ display:none; padding:14px; }
+    .screen.active{ display:block; }
+
+    .panel{
+      background: var(--card);
+      border-radius: var(--r);
+      padding: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    .h1{ font-size:18px; font-weight: 1100; margin:0 0 6px; }
+    .p{ margin:0; color: var(--muted); font-size:13px; line-height:1.35; }
+    .sp{ height:12px; }
+
+    .btn{
+      appearance:none; border:none;
+      cursor:pointer;
+      background: var(--pink);
+      color:#fff;
+      font-weight: 1100;
+      border-radius: 14px;
+      padding: 12px 14px;
+      width: 100%;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+    .btn.secondary{
+      background: rgba(236,82,164,.12);
+      color: var(--text);
+      border: 1px solid rgba(236,82,164,.28);
+    }
+
+    /* Mode */
+    .modeGrid{ display:grid; gap:10px; }
+    .bigBtn{
+      border:none; cursor:pointer;
+      border-radius: 18px;
+      padding: 14px 14px;
+      text-align:left;
+      background: rgba(255,255,255,.90);
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      transition: transform .12s ease;
+    }
+    .bigBtn:active{ transform: translateY(2px) scale(.99); }
+    .bigBtn b{ display:block; font-size:16px; }
+    .bigBtn span{ display:block; font-size:12px; color: var(--muted); margin-top:3px; }
+
+    /* Checklist */
+    .checklist{ display:grid; gap:10px; margin-top:10px; }
+    .item{
+      display:flex; gap:10px; align-items:center;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .item input{ width:18px; height:18px; accent-color: var(--pink); }
+    .item .name{ font-weight: 1100; }
+    .item .sub{ margin-top:2px; font-size:12px; color: var(--muted); }
+    .badge{
+      margin-left:auto;
+      font-size: 12px;
+      font-weight: 1100;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.25);
+      color: var(--text);
+    }
+
+    /* Chat */
+    .chat{ display:grid; gap:10px; }
+    .bubbleRow{ display:flex; gap:10px; align-items:flex-end; }
+    .bubbleRow.right{ justify-content:flex-end; }
+    .bubble{
+      max-width: 86%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.3;
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .bubble.user{
+      background: linear-gradient(180deg,var(--pink2),var(--pink));
+      color:#fff;
+      border-top-right-radius: 8px;
+    }
+    .bubble.bot{
+      background: rgba(255,255,255,.94);
+      color: var(--text);
+      border-top-left-radius: 8px;
+    }
+    .monoSmall{ font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Shop */
+    .shopHeader{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .money{ font-weight:1100; color:#7a1e4c; }
+    .twoCol{ display:grid; grid-template-columns: 1.25fr .75fr; gap:10px; }
+    @media (max-width: 420px){ .twoCol{ grid-template-columns: 1fr; } }
+
+    .tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .tab{
+      border:none; cursor:pointer;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-weight: 1100;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+    }
+    .tab.active{
+      background: rgba(236,82,164,.16);
+      border-color: rgba(236,82,164,.35);
+      color: var(--text);
+    }
+
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
+    .cardShop{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .miniSvg{
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+      display:grid; place-items:center;
+      border: 1px solid rgba(0,0,0,.06);
+      flex: 0 0 auto;
+    }
+    .miniSvg svg{ width: 28px; height: 28px; }
+    .cardShop b{ font-size:14px; }
+    .price{ color: var(--muted); font-weight:1100; }
+    .q{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .buy{
+      margin-top:auto;
+      border:none; cursor:pointer;
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-weight: 1100;
+      background: var(--pink);
+      color:#fff;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .buy:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+    .buy:disabled{
+      background: rgba(236,82,164,.35);
+      cursor:not-allowed;
+    }
+    .soldOut{
+      font-size: 12px;
+      font-weight: 1100;
+      color: rgba(91,28,58,.70);
+      background: rgba(236,82,164,.10);
+      border: 1px solid rgba(236,82,164,.18);
+      border-radius: 12px;
+      padding: 6px 8px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .side{
+      background: rgba(255,255,255,.80);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .side b{ font-size: 13px; }
+    .bag{
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+      display:grid;
+      gap:8px;
+    }
+    .bagItem{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .bagItem small{ color: var(--muted); font-weight: 900; display:block; margin-top:2px; }
+    .removeBtn{
+      border: none;
+      cursor: pointer;
+      font-weight: 1100;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.25);
+      color: var(--text);
+      transition: transform .12s ease;
+    }
+    .removeBtn:active{ transform: translateY(2px) scale(.99); }
+
+    .moniBox{
+      margin-top: 10px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .moniLine{ display:flex; gap:10px; align-items:flex-start; }
+    .moniLine .avatar{ width:34px; height:34px; border-radius: 12px; }
+    .moniText{ font-size: 13px; color: var(--text); line-height: 1.35; }
+    .moniHint{ margin-top:6px; font-size:12px; color: var(--muted); }
+
+    .footerActions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 12px;
+    }
+
+    /* Result */
+    .resultBox{ text-align:center; padding: 10px 6px; }
+    .big{ font-size: 22px; font-weight: 1200; margin: 0 0 6px; }
+    .voucher{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 1200;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.28);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="avatar">m</div>
+      <div class="title">
+        <b>Trợ thủ AI - Moni</b>
+        <div>Trợ thủ AI cá nhân của bạn</div>
+      </div>
+      <div class="chip" id="chipTop">Chưa chọn chế độ</div>
+    </div>
+
+    <section class="screen active" id="sMode">
+      <div class="panel">
+        <div class="h1">Chọn chế độ chơi</div>
+        <p class="p">Mục tiêu: mua đủ đồ Tết <b>không lố ngân sách</b>. Moni sẽ nhắc để bạn chi tiêu hợp lý.</p>
+      </div>
+      <div class="sp"></div>
+      <div class="modeGrid">
+        <button class="bigBtn" id="btnSolo" type="button">
+          <b>Cá nhân</b>
+          <span>Tự quản lý chi tiêu</span>
+        </button>
+        <button class="bigBtn" id="btnGroup" type="button">
+          <b>Nhóm bạn</b>
+          <span>Cùng sắm nhưng vẫn phải cân đối tiền</span>
+        </button>
+      </div>
+      <div class="sp"></div>
+      <button class="btn secondary" id="btnHow" type="button">Luật chơi</button>
+    </section>
+
+    <section class="screen" id="sRules">
+      <div class="panel">
+        <div class="h1">Luật chơi nhanh</div>
+        <p class="p">
+          1) Tick danh sách đồ cần mua.<br>
+          2) Moni cấp ngân sách theo số món tick (có random).<br>
+          3) Vào shop mua từng món (mỗi món có nhiều mức giá/chất lượng).<br>
+          4) Mua đủ món + không lố tiền => thắng.<br><br>
+          Voucher:<br>
+          • <b>30.000đ</b> nếu vừa đủ tiền và chất lượng tốt.<br>
+          • <b>20.000đ</b> nếu đủ món nhưng chất lượng trung bình.<br>
+          • <b>0đ</b> nếu lố/thiếu => chơi lại.
+        </p>
+        <div class="sp"></div>
+        <button class="btn" id="btnRulesBack" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <section class="screen" id="sList">
+      <div class="panel">
+        <div class="h1">Checklist đồ sắm Tết</div>
+        <p class="p">Tick món bạn muốn mua. Sau đó Moni sẽ báo ngân sách phù hợp.</p>
+        <div class="checklist" id="checklist"></div>
+        <div class="sp"></div>
+        <button class="btn" id="btnToBudget" type="button">Tiếp theo</button>
+        <div class="sp"></div>
+        <button class="btn secondary" id="btnBackMode" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <section class="screen" id="sBudget">
+      <div class="panel">
+        <div class="chat">
+          <div class="bubbleRow right">
+            <div class="bubble user" id="bubbleUser"></div>
+          </div>
+
+          <div class="bubbleRow">
+            <div class="avatar" style="width:34px;height:34px;border-radius:12px;">m</div>
+            <div>
+              <div class="bubble bot" id="bubbleBot"></div>
+              <div class="monoSmall">Now</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn" id="btnEnterShop" type="button">Vào shop</button>
+        <div class="sp"></div>
+        <button class="btn secondary" id="btnBackList" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <section class="screen" id="sShop">
+      <div class="panel">
+        <div class="shopHeader">
+          <div>
+            <div class="h1" style="margin:0">Shop sắm Tết</div>
+            <p class="p" style="margin-top:4px">
+              Mua đủ món đã tick. Bạn có thể <b>xóa món khỏi giỏ</b> nếu mua nhầm.
+              (<span style="font-weight:900">Hết hàng</span> = hôm nay shop không còn mức đó)
+            </p>
+          </div>
+          <div class="chip">
+            Còn lại: <span class="money" id="moneyLeft">0đ</span>
+          </div>
+        </div>
+
+        <div class="tabs" id="tabs"></div>
+
+        <div class="twoCol">
+          <div>
+            <div class="grid" id="shopGrid"></div>
+          </div>
+
+          <div>
+            <div class="side">
+              <b>Giỏ đồ đã mua</b>
+              <ul class="bag" id="bagList"></ul>
+            </div>
+
+            <div class="moniBox">
+              <div class="moniLine">
+                <div class="avatar">m</div>
+                <div>
+                  <div class="moniText" id="moniText"></div>
+                  <div class="moniHint" id="moniHint"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="footerActions">
+              <button class="btn secondary" id="btnRestart" type="button">Chơi lại</button>
+              <button class="btn" id="btnFinish" type="button">Chấm điểm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="sResult">
+      <div class="panel resultBox">
+        <div class="big" id="resultTitle">Kết quả</div>
+        <p class="p" id="resultDesc"></p>
+        <div class="voucher" id="voucherBox" style="display:none;"></div>
+        <div class="sp"></div>
+        <button class="btn" id="btnPlayAgain" type="button">Chơi lại</button>
+      </div>
+    </section>
+
+  </div>
+
+<script>
+  // Helpers
+  const $$ = (q) => document.querySelector(q);
+  const vnd = (n) => n.toLocaleString("vi-VN") + "đ";
+  const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+  const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  function show(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    $$(id).classList.add("active");
+  }
+
+  // Data
+  const checklistItems = [
+    { id:"ao-dai", name:"Áo dài", sub:"Diện Tết xinh xắn", minQuality:2 },
+    { id:"dao", name:"Cây đào", sub:"Trang trí phòng khách", minQuality:2 },
+    { id:"quat", name:"Cây quất", sub:"May mắn, sung túc", minQuality:2 },
+    { id:"mut", name:"Mứt Tết", sub:"Đãi khách", minQuality:1 },
+    { id:"banh-chung", name:"Bánh chưng", sub:"Món truyền thống", minQuality:1 },
+    { id:"bao-li-xi", name:"Bao lì xì", sub:"Lộc đầu năm", minQuality:1 },
+    { id:"nuoc-ngot", name:"Nước ngọt", sub:"Tiếp khách", minQuality:1 },
+    { id:"deco", name:"Trang trí", sub:"Dây đèn, decal…", minQuality:1 }
+  ];
+
+  const needToCategory = {
+    "ao-dai": "Áo dài",
+    "dao": "Cây đào",
+    "quat": "Cây quất",
+    "mut": "Mứt Tết",
+    "banh-chung": "Đồ ăn",
+    "bao-li-xi": "Phụ kiện",
+    "nuoc-ngot": "Đồ ăn",
+    "deco": "Trang trí"
+  };
+
+  const baseCatalog = {
+    "Cây đào": [
+      { sku:"dao-1", name:"Đào mini", base: 100000, q:1, icon:"peach" },
+      { sku:"dao-2", name:"Đào vừa", base: 200000, q:2, icon:"peach" },
+      { sku:"dao-3", name:"Đào to", base: 300000, q:3, icon:"peach" }
+    ],
+    "Cây quất": [
+      { sku:"quat-1", name:"Quất mini", base: 120000, q:1, icon:"kumquat" },
+      { sku:"quat-2", name:"Quất vừa", base: 220000, q:2, icon:"kumquat" },
+      { sku:"quat-3", name:"Quất bonsai", base: 350000, q:3, icon:"kumquat" }
+    ],
+    "Áo dài": [
+      { sku:"aodai-1", name:"Áo dài basic", base: 150000, q:1, icon:"dress" },
+      { sku:"aodai-2", name:"Áo dài hoa", base: 250000, q:2, icon:"dress" },
+      { sku:"aodai-3", name:"Áo dài cao cấp", base: 400000, q:3, icon:"dress" }
+    ],
+    "Mứt Tết": [
+      { sku:"mut-1", name:"Mứt gừng", base: 50000, q:1, icon:"candy" },
+      { sku:"mut-2", name:"Mứt dừa", base: 80000, q:2, icon:"candy" },
+      { sku:"mut-3", name:"Combo mứt", base: 120000, q:3, icon:"candy" }
+    ],
+    "Đồ ăn": [
+      { sku:"banh-1", name:"Bánh chưng", base: 90000, q:2, icon:"cake" },
+      { sku:"hatdua-1", name:"Hạt dưa", base: 35000, q:1, icon:"seed" },
+      { sku:"nuoc-1", name:"Thùng nước ngọt", base: 60000, q:1, icon:"drink" }
+    ],
+    "Phụ kiện": [
+      { sku:"lixi-1", name:"Bao lì xì", base: 30000, q:1, icon:"envelope" },
+      { sku:"decal-1", name:"Decal Tết", base: 40000, q:1, icon:"spark" },
+      { sku:"den-1", name:"Dây đèn", base: 70000, q:2, icon:"spark" }
+    ],
+    "Trang trí": [
+      { sku:"hoa-1", name:"Bình hoa", base: 80000, q:1, icon:"spark" },
+      { sku:"nen-1", name:"Nến thơm", base: 90000, q:1, icon:"spark" },
+      { sku:"combo-1", name:"Combo trang trí", base: 140000, q:2, icon:"spark" }
+    ]
+  };
+
+  function iconSvg(type){
+    const common = `fill="none" stroke="rgba(236,82,164,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+    if(type==="peach") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c5 0 8-3 8-7 0-5-5-9-8-12-3 3-8 7-8 12 0 4 3 7 8 7z"/><path ${common} d="M12 9c1-3 3-5 6-6"/></svg>`;
+    if(type==="kumquat") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c4 0 7-3 7-7s-3-10-7-10-7 6-7 10 3 7 7 7z"/><path ${common} d="M12 4c1 1 2 2 4 2"/></svg>`;
+    if(type==="dress") return `<svg viewBox="0 0 24 24"><path ${common} d="M8 4l4 3 4-3"/><path ${common} d="M9 7l-3 5 6 9 6-9-3-5"/><path ${common} d="M12 7v4"/></svg>`;
+    if(type==="candy") return `<svg viewBox="0 0 24 24"><path ${common} d="M8 8c2-2 6-2 8 0s2 6 0 8-6 2-8 0-2-6 0-8z"/><path ${common} d="M6 10l-2-2"/><path ${common} d="M18 10l2-2"/></svg>`;
+    if(type==="cake") return `<svg viewBox="0 0 24 24"><path ${common} d="M4 12h16v8H4z"/><path ${common} d="M6 12c2 2 4 2 6 0s4-2 6 0"/><path ${common} d="M8 7c0 2 2 2 2 0s-2-2 0-4"/><path ${common} d="M14 7c0 2 2 2 2 0s-2-2 0-4"/></svg>`;
+    if(type==="seed") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c5-3 7-7 7-11 0-3-2-5-7-7-5 2-7 4-7 7 0 4 2 8 7 11z"/></svg>`;
+    if(type==="drink") return `<svg viewBox="0 0 24 24"><path ${common} d="M7 3h10l-1 18H8L7 3z"/><path ${common} d="M9 7h6"/><path ${common} d="M12 3v4"/></svg>`;
+    if(type==="envelope") return `<svg viewBox="0 0 24 24"><path ${common} d="M4 7h16v12H4z"/><path ${common} d="M4 7l8 7 8-7"/></svg>`;
+    return `<svg viewBox="0 0 24 24"><path ${common} d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>`;
+  }
+
+  // State
+  const state = {
+    mode: null,
+    selected: new Set(),
+    budget: 0,
+    moneyLeft: 0,
+    bag: [],
+    catalogRun: {},
+    requiredCategories: []
+  };
+  let currentCategory = null;
+
+  // UI
+  const chipTop = $$("#chipTop");
+  const checklistEl = $$("#checklist");
+  const bubbleUser = $$("#bubbleUser");
+  const bubbleBot  = $$("#bubbleBot");
+  const moneyLeftEl = $$("#moneyLeft");
+  const tabsEl = $$("#tabs");
+  const gridEl = $$("#shopGrid");
+  const bagEl  = $$("#bagList");
+  const moniText = $$("#moniText");
+  const moniHint = $$("#moniHint");
+
+  // Render checklist
+  function renderChecklist(){
+    checklistEl.innerHTML = "";
+    checklistItems.forEach(it=>{
+      const row = document.createElement("label");
+      row.className = "item";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = state.selected.has(it.id);
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.selected.add(it.id);
+        else state.selected.delete(it.id);
+        updateNextButton();
+      });
+
+      const text = document.createElement("div");
+      text.innerHTML = `<div class="name">${it.name}</div><div class="sub">${it.sub}</div>`;
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = `Q tối thiểu: ${it.minQuality}/3`;
+
+      row.appendChild(cb);
+      row.appendChild(text);
+      row.appendChild(badge);
+      checklistEl.appendChild(row);
+    });
+    updateNextButton();
+  }
+
+  function updateNextButton(){
+    const n = state.selected.size;
+    $$("#btnToBudget").textContent = n ? `Tiếp theo (đã chọn ${n} món)` : "Tiếp theo";
+  }
+
+  // Budget logic (mượt + dễ hiểu)
+  function computeBudget(){
+    const n = Math.max(1, state.selected.size);
+
+    const base = 250000 + randInt(-10000, 20000);
+    const per  = randInt(70000, 115000);
+    let budget = base + n * per;
+
+    // mode affects difficulty a bit
+    budget += (state.mode === "Nhóm bạn") ? randInt(-20000, 25000) : randInt(-15000, 35000);
+
+    return Math.round(budget / 10000) * 10000;
+  }
+
+  function buildCatalogRun(){
+    const run = {};
+    Object.keys(baseCatalog).forEach(cat=>{
+      run[cat] = baseCatalog[cat].map(it=>{
+        const jitter = randInt(-8, 10) / 100; // nhẹ hơn
+        let price = Math.round(it.base * (1 + jitter) / 1000) * 1000;
+
+        // HẾT HÀNG: giảm tần suất cho đỡ khó hiểu
+        let inStock = true;
+        if(it.q === 1 && Math.random() < 0.14) inStock = false; // 14%
+        if(it.q === 3 && Math.random() < 0.08) inStock = false; // 8%
+
+        return { ...it, price, inStock };
+      });
+    });
+    return run;
+  }
+
+  function computeRequiredCategories(){
+    const cats = new Set();
+    checklistItems.forEach(it=>{
+      if(state.selected.has(it.id)) cats.add(needToCategory[it.id]);
+    });
+    return Array.from(cats);
+  }
+
+  function moniSay(text, hint=""){
+    moniText.textContent = text;
+    moniHint.textContent = hint || "";
+  }
+
+  function updateMoney(){
+    moneyLeftEl.textContent = vnd(state.moneyLeft);
+  }
+
+  function renderTabs(){
+    tabsEl.innerHTML = "";
+    const required = [...state.requiredCategories];
+
+    // 1 tab bonus "cám dỗ"
+    const allCats = Object.keys(baseCatalog);
+    const bonus = pick(allCats.filter(c=>!required.includes(c)));
+    const showCats = [...new Set([...required, bonus])];
+
+    if(!currentCategory) currentCategory = showCats[0];
+
+    showCats.forEach(cat=>{
+      const b = document.createElement("button");
+      b.className = "tab" + (cat === currentCategory ? " active" : "");
+      b.type = "button";
+      b.textContent = required.includes(cat) ? cat : (cat + " (Bonus)");
+      b.addEventListener("click", ()=>{
+        currentCategory = cat;
+        renderTabs();
+        renderGrid();
+        if(required.includes(cat)){
+          moniSay(`Món “${cat}” là món bạn đã tick. Nên mua đủ trước nhé!`, "Tip: mua vừa (Q2) thường là cân bằng đẹp + giá.");
+        }else{
+          moniSay(`“${cat} (Bonus)” là đồ thêm. Nếu còn ít tiền thì khoan mua nha.`, "Tip: ưu tiên checklist trước để không thua.");
+        }
+      });
+      tabsEl.appendChild(b);
+    });
+  }
+
+  function renderGrid(){
+    gridEl.innerHTML = "";
+    const items = state.catalogRun[currentCategory] || [];
+
+    items.forEach(it=>{
+      const card = document.createElement("div");
+      card.className = "cardShop";
+
+      const r = document.createElement("div");
+      r.className = "row";
+
+      const icon = document.createElement("div");
+      icon.className = "miniSvg";
+      icon.innerHTML = iconSvg(it.icon);
+
+      const meta = document.createElement("div");
+      meta.innerHTML = `<b>${it.name}</b><div class="q">Chất lượng: ${it.q}/3</div>`;
+
+      r.appendChild(icon);
+      r.appendChild(meta);
+
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = it.inStock ? vnd(it.price) : "";
+
+      if(!it.inStock){
+        const so = document.createElement("div");
+        so.className = "soldOut";
+        so.textContent = "Hết hàng hôm nay";
+        card.appendChild(r);
+        card.appendChild(so);
+      }else{
+        card.appendChild(r);
+        card.appendChild(price);
+      }
+
+      const buy = document.createElement("button");
+      buy.className = "buy";
+      buy.type = "button";
+
+      const canBuy = it.inStock && state.moneyLeft >= it.price;
+      buy.textContent = it.inStock ? (canBuy ? "Mua" : "Không đủ tiền") : "Không mua được";
+      buy.disabled = !canBuy;
+
+      buy.addEventListener("click", ()=> buyItem(currentCategory, it));
+      card.appendChild(buy);
+
+      gridEl.appendChild(card);
+    });
+  }
+
+  function renderBag(){
+    bagEl.innerHTML = "";
+    if(state.bag.length === 0){
+      const li = document.createElement("li");
+      li.className = "bagItem";
+      li.textContent = "Chưa mua gì.";
+      bagEl.appendChild(li);
+      return;
+    }
+
+    state.bag.forEach((x, idx)=>{
+      const li = document.createElement("li");
+      li.className = "bagItem";
+
+      const left = document.createElement("div");
+      left.innerHTML = `<b>${x.category}</b><small>${x.name} • ${vnd(x.price)} • Q${x.q}</small>`;
+
+      const rm = document.createElement("button");
+      rm.className = "removeBtn";
+      rm.type = "button";
+      rm.textContent = "Xoá";
+      rm.addEventListener("click", ()=> removeFromBag(idx));
+
+      li.appendChild(left);
+      li.appendChild(rm);
+      bagEl.appendChild(li);
+    });
+  }
+
+  function removeFromBag(index){
+    const removed = state.bag.splice(index, 1)[0];
+    state.moneyLeft += removed.price;
+
+    updateMoney();
+    renderBag();
+    renderGrid();
+
+    moniSay(
+      `Đã xoá “${removed.name}”. Hoàn lại ${vnd(removed.price)} vào ngân sách.`,
+      "Tip: nếu thiếu món checklist thì nhớ mua lại trước khi chấm điểm nhé."
+    );
+  }
+
+  function buyItem(category, it){
+    // spend
+    state.moneyLeft -= it.price;
+    state.bag.push({ category, sku: it.sku, name: it.name, price: it.price, q: it.q });
+
+    updateMoney();
+    renderBag();
+    renderGrid();
+
+    const budget = state.budget;
+    const spent = budget - state.moneyLeft;
+
+    // Moni: nhắc có ý nghĩa hơn
+    if(!it.inStock){
+      moniSay("Món này hết hàng hôm nay rồi 😭", "Tip: thử chọn mức khác hoặc chuyển sang món khác.");
+      return;
+    }
+
+    const remainingCats = state.requiredCategories.filter(cat=>{
+      const bought = state.bag.some(x=>x.category===cat);
+      return !bought;
+    });
+
+    if(it.price > budget * 0.45){
+      moniSay(
+        "Món này chiếm quá nhiều ngân sách 😥 Có nguy cơ thiếu tiền cho món khác.",
+        remainingCats.length ? `Còn thiếu: ${remainingCats.join(", ")}.` : "Bạn đã gần đủ món rồi."
+      );
+      return;
+    }
+
+    if(it.q === 1 && state.requiredCategories.includes(category)){
+      moniSay(
+        "Bạn đang chọn bản rẻ nhất (Q1). Nếu nhiều món Q1 thì cuối game khó lấy voucher 30k.",
+        "Tip: nâng 1–2 món quan trọng lên Q2 để “đẹp vừa đủ”."
+      );
+      return;
+    }
+
+    if(state.moneyLeft < 90000 && remainingCats.length){
+      moniSay(
+        "Bạn sắp hết tiền rồi! Ưu tiên mua các món checklist còn thiếu nhé.",
+        `Còn thiếu: ${remainingCats.join(", ")}`
+      );
+      return;
+    }
+
+    moniSay("Okie! Mua thành công 💗", remainingCats.length ? `Còn thiếu: ${remainingCats.join(", ")}` : "Giờ bạn có thể chấm điểm luôn!");
+  }
+
+  function evaluate(){
+    const neededCats = state.requiredCategories;
+
+    const boughtCats = new Set(state.bag.map(x=>x.category));
+    const missing = neededCats.filter(c=>!boughtCats.has(c));
+
+    const budget = state.budget;
+    const spent = budget - state.moneyLeft;
+
+    if(state.moneyLeft < 0){
+      return { ok:false, title:"Bạn THUA rồi 😭", desc:`Bạn đã chi ${vnd(spent)} vượt ngân sách ${vnd(budget)}. Chơi lại nhé!`, voucher:0 };
+    }
+    if(missing.length){
+      return { ok:false, title:"Thiếu món 😭", desc:`Bạn còn thiếu: ${missing.join(", ")}. Quay lại shop mua đủ nhé!`, voucher:0, canBack:true };
+    }
+
+    // Quality average for required categories (best per category)
+    let qSum = 0, qCount = 0;
+    neededCats.forEach(cat=>{
+      const items = state.bag.filter(x=>x.category===cat);
+      const best = Math.max(...items.map(x=>x.q));
+      qSum += best; qCount += 1;
+    });
+    const qAvg = qSum / qCount;
+
+    if(qAvg >= 2.2){
+      return { ok:true, title:"THẮNG RỒI 🎉", desc:`Bạn mua đủ món, không lố tiền. Tổng chi: ${vnd(spent)} / ${vnd(budget)}. Chất lượng TB: ${qAvg.toFixed(1)}/3.`, voucher:30000 };
+    }
+    return { ok:true, title:"ỔN ÁP 👍", desc:`Bạn mua đủ món và không lố ngân sách. Tổng chi: ${vnd(spent)} / ${vnd(budget)}. Chất lượng TB: ${qAvg.toFixed(1)}/3.`, voucher:20000 };
+  }
+
+  // Flow events
+  $$("#btnHow").addEventListener("click", ()=> show("#sRules"));
+  $$("#btnRulesBack").addEventListener("click", ()=> show("#sMode"));
+
+  $$("#btnSolo").addEventListener("click", ()=>{
+    state.mode = "Cá nhân";
+    chipTop.textContent = "Chế độ: Cá nhân";
+    resetRunKeepMode();
+    show("#sList");
+  });
+
+  $$("#btnGroup").addEventListener("click", ()=>{
+    state.mode = "Nhóm bạn";
+    chipTop.textContent = "Chế độ: Nhóm bạn";
+    resetRunKeepMode();
+    show("#sList");
+  });
+
+  $$("#btnBackMode").addEventListener("click", ()=> show("#sMode"));
+  $$("#btnBackList").addEventListener("click", ()=> show("#sList"));
+
+  $$("#btnToBudget").addEventListener("click", ()=>{
+    if(state.selected.size === 0){
+      alert("Bạn tick ít nhất 1 món để chơi nha!");
+      return;
+    }
+
+    state.requiredCategories = computeRequiredCategories();
+    state.budget = computeBudget();
+    state.moneyLeft = state.budget;
+    state.catalogRun = buildCatalogRun();
+    state.bag = [];
+    currentCategory = null;
+
+    const names = checklistItems.filter(x=>state.selected.has(x.id)).map(x=>x.name);
+    bubbleUser.textContent = `Mình muốn mua đồ Tết: ${names.join(", ")}.`;
+    bubbleBot.innerHTML = `Okie! Dựa vào danh sách của bạn, mình cấp ngân sách <b>${vnd(state.budget)}</b> nhé.`;
+
+    show("#sBudget");
+  });
+
+  $$("#btnEnterShop").addEventListener("click", ()=>{
+    updateMoney();
+    renderBag();
+    renderTabs();
+    renderGrid();
+    moniSay("Bắt đầu mua nhé! Ưu tiên món checklist trước nha 👀", "Tip: nếu mua quá đắt, bạn có thể xóa khỏi giỏ để hoàn tiền.");
+    show("#sShop");
+  });
+
+  $$("#btnFinish").addEventListener("click", ()=>{
+    const res = evaluate();
+    $$("#resultTitle").textContent = res.title;
+    $$("#resultDesc").textContent = res.desc;
+
+    const vb = $$("#voucherBox");
+    if(res.ok){
+      vb.style.display = "inline-flex";
+      vb.textContent = `🎁 Voucher: ${vnd(res.voucher)}`;
+    }else{
+      vb.style.display = "none";
+    }
+
+    if(res.canBack){
+      moniSay("Bạn còn thiếu món checklist đó!", "Mua đủ rồi bấm Chấm điểm lại nhé.");
+      alert("Bạn còn thiếu món checklist. Mua đủ rồi bấm Chấm điểm lại nha!");
+      return;
+    }
+
+    show("#sResult");
+  });
+
+  function resetAll(){
+    state.mode = null;
+    state.selected = new Set();
+    state.budget = 0;
+    state.moneyLeft = 0;
+    state.bag = [];
+    state.catalogRun = {};
+    state.requiredCategories = [];
+    currentCategory = null;
+    chipTop.textContent = "Chưa chọn chế độ";
+    renderChecklist();
+  }
+
+  function resetRunKeepMode(){
+    state.selected = new Set();
+    renderChecklist();
+  }
+
+  $$("#btnRestart").addEventListener("click", ()=> { resetAll(); show("#sMode"); });
+  $$("#btnPlayAgain").addEventListener("click", ()=> { resetAll(); show("#sMode"); });
+
+  // init
+  renderChecklist();
+</script>
+</body>
+</html>
