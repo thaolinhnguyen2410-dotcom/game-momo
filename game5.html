@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Momo Tết – Chi tiêu thông minh (FULL)</title>
+<style>
+:root{
+  --maxw: 480px;
+  --pink:#ec52a4; --pink2:#ff79c6;
+  --bg:#fde7f2;
+  --card: rgba(255,255,255,.92);
+  --text:#5b1c3a; --muted:#8a4a6b;
+  --r:18px;
+  --shadow: 0 18px 60px rgba(0,0,0,.18);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  display:grid;place-items:center;
+  background:var(--bg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  padding:16px;
+  color:var(--text);
+}
+.app{
+  width:min(92vw,var(--maxw));
+  height:min(90vh,900px);
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  background:linear-gradient(#ffd3e6,#fde7f2);
+  display:flex;
+  flex-direction:column;
+}
+.topbar{
+  padding:12px 12px 10px;
+  display:flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.avatar{
+  width:40px;height:40px;border-radius:14px;
+  display:grid;place-items:center;
+  font-weight:900;color:var(--pink);
+  background:radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+  flex:0 0 auto;
+}
+.title{line-height:1.15}
+.title b{font-size:16px}
+.title div{font-size:12px;color:var(--muted);margin-top:2px}
+.chip{
+  margin-left:auto;
+  padding:8px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(0,0,0,.06);
+  font-size:12px;font-weight:900;color:var(--muted);
+  white-space:nowrap;
+}
+.screen{
+  display:none;
+  padding:14px;
+  height: calc(100% - 64px);
+  overflow:auto;
+}
+.screen.active{display:block}
+.panel{
+  background:var(--card);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:var(--r);
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,.10);
+}
+.h1{margin:0 0 6px;font-size:18px;font-weight:1100}
+.p{margin:0;color:var(--muted);font-size:13px;line-height:1.35}
+.sp{height:12px}
+.btn{
+  appearance:none;border:none;cursor:pointer;
+  width:100%;
+  padding:12px 14px;
+  border-radius:14px;
+  background:var(--pink);
+  color:#fff;font-weight:1100;
+  transition:transform .12s ease;
+}
+.btn:active{transform:translateY(2px) scale(.99)}
+.btn.secondary{
+  background:rgba(236,82,164,.12);
+  border:1px solid rgba(236,82,164,.28);
+  color:var(--text);
+}
+.modeGrid{display:grid;gap:10px}
+.bigBtn{
+  border:none;cursor:pointer;text-align:left;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,.10);
+  transition:transform .12s ease;
+}
+.bigBtn:active{transform:translateY(2px) scale(.99)}
+.bigBtn b{display:block;font-size:16px}
+.bigBtn span{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center}
+.roomBox{display:grid;gap:10px;margin-top:10px;}
+.input{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(0,0,0,.12);
+  font-weight:900;
+  outline:none;
+  text-transform:uppercase;
+}
+.copyBtn{
+  border:none;cursor:pointer;
+  border-radius:12px;
+  padding:10px 10px;
+  background:rgba(236,82,164,.12);
+  border:1px solid rgba(236,82,164,.25);
+  color:var(--text);
+  font-weight:1100;
+}
+.small{font-size:12px;color:var(--muted)}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;
+  background:rgba(236,82,164,.12);
+  border:1px solid rgba(236,82,164,.25);
+  color:var(--text);
+  font-weight:1100;
+  font-size:12px;
+}
+.badge.important{background:rgba(255,210,230,.7)}
+.checklist{display:grid;gap:10px;margin-top:10px}
+.item{
+  display:flex;gap:10px;align-items:flex-start;
+  background:rgba(255,255,255,.86);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:12px;
+}
+.item input{margin-top:2px;width:18px;height:18px;accent-color:var(--pink)}
+.item b{display:block}
+.item .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.item .tag{margin-left:auto}
+
+.chat{display:grid;gap:10px}
+.bubbleRow{display:flex;gap:10px;align-items:flex-end}
+.bubbleRow.right{justify-content:flex-end}
+.bubble{
+  max-width:86%;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+  font-size:14px;line-height:1.3;
+}
+.bubble.user{
+  background:linear-gradient(180deg,var(--pink2),var(--pink));
+  color:#fff;border-top-right-radius:8px;
+}
+.bubble.bot{
+  background:rgba(255,255,255,.96);
+  color:var(--text);border-top-left-radius:8px;
+}
+.monoSmall{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Shop layout: sticky money + scroll safe */
+.shopShell{padding:0;overflow:hidden}
+.shopTop{
+  position:sticky;top:0;z-index:5;
+  background:rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  padding:12px 14px;
+  display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+}
+.money{font-weight:1200;color:#7a1e4c}
+.tabs{
+  padding:10px 14px 0;
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.tab{
+  border:none;cursor:pointer;
+  padding:8px 10px;border-radius:999px;
+  background:rgba(255,255,255,.75);
+  border:1px solid rgba(0,0,0,.06);
+  color:var(--muted);
+  font-weight:1100;font-size:12px;
+}
+.tab.active{
+  background:rgba(236,82,164,.16);
+  border-color:rgba(236,82,164,.35);
+  color:var(--text);
+}
+.shopBody{
+  height: calc(100% - 106px);
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap:10px;
+  padding:10px 14px 14px;
+  overflow:hidden;
+}
+@media (max-width: 430px){
+  .shopBody{grid-template-columns:1fr;height: calc(100% - 106px);overflow:auto;}
+}
+.grid{
+  overflow:auto;
+  padding-right:4px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media (max-width: 430px){ .grid{grid-template-columns:1fr} }
+.cardShop{
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+  display:flex;flex-direction:column;gap:6px;
+}
+.cardShop b{font-size:14px}
+.meta{font-size:12px;color:var(--muted);font-weight:900}
+.buyBtn{
+  width:100%;
+  border:none;cursor:pointer;
+  border-radius:12px;
+  padding:10px 10px;
+  font-weight:1100;
+  background:var(--pink);
+  color:#fff;
+  transition:transform .12s ease;
+}
+.buyBtn:active{transform:translateY(2px) scale(.99)}
+.buyBtn:disabled{background:rgba(236,82,164,.35);cursor:not-allowed;}
+
+.side{
+  overflow:auto;
+  background:rgba(255,255,255,.85);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.bag{
+  margin:0;padding:0;list-style:none;
+  display:grid;gap:8px;
+  max-height: 220px;
+  overflow:auto;
+}
+.bagItem{
+  display:flex;justify-content:space-between;gap:10px;
+  align-items:center;
+  padding:10px 10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(0,0,0,.06);
+}
+.bagItem small{display:block;color:var(--muted);font-weight:900;margin-top:2px}
+.removeBtn{
+  border:none;cursor:pointer;
+  border-radius:12px;
+  padding:8px 10px;
+  background:rgba(236,82,164,.12);
+  border:1px solid rgba(236,82,164,.25);
+  color:var(--text);
+  font-weight:1100;
+}
+.removeBtn:active{transform:translateY(2px) scale(.99)}
+.moniBox{
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+.moniLine{display:flex;gap:10px;align-items:flex-start}
+.moniText{font-size:13px;line-height:1.35}
+.moniHint{margin-top:6px;font-size:12px;color:var(--muted)}
+.footerActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}
+
+.resultBox{text-align:center}
+.big{font-size:22px;font-weight:1200;margin:0 0 6px}
+.voucher{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-top:10px;
+  padding:10px 12px;border-radius:14px;
+  font-weight:1200;
+  background:rgba(236,82,164,.12);
+  border:1px solid rgba(236,82,164,.28);
+}
+.badgeRow{
+  display:flex;flex-wrap:wrap;gap:8px;
+  justify-content:center;margin-top:10px;
+}
+.badgeChip{
+  padding:8px 10px;border-radius:999px;
+  background:rgba(255,255,255,.85);
+  border:1px solid rgba(0,0,0,.06);
+  font-size:12px;font-weight:1100;
+}
+hr{border:none;border-top:1px solid rgba(0,0,0,.06);margin:10px 0}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="avatar">m</div>
+    <div class="title">
+      <b>Trợ thủ AI - Moni</b>
+      <div>Chi tiêu Tết thông minh</div>
+    </div>
+    <div class="chip" id="chipTop">Chưa chọn chế độ</div>
+  </div>
+
+  <!-- MODE -->
+  <section class="screen active" id="sMode">
+    <div class="panel">
+      <div class="h1">Chọn chế độ chơi</div>
+      <p class="p">
+        • <b>Tiết kiệm</b>: rẻ, dễ thiếu điểm chất lượng<br>
+        • <b>Thường</b>: cân bằng, Moni khuyên chọn<br>
+        • <b>Cao cấp</b>: đẹp nhưng dễ lố ngân sách
+      </p>
+    </div>
+    <div class="sp"></div>
+
+    <div class="modeGrid">
+      <button class="bigBtn" id="btnSolo" type="button">
+        <b>Cá nhân</b>
+        <span>Voucher: 20k / 30k • Dễ hơn</span>
+      </button>
+      <button class="bigBtn" id="btnGroup" type="button">
+        <b>Nhóm (share mã phòng – demo)</b>
+        <span>Voucher: 50k / 80k • Khó hơn chút</span>
+      </button>
+    </div>
+
+    <div class="sp"></div>
+    <button class="btn secondary" id="btnHow" type="button">Luật chơi</button>
+  </section>
+
+  <!-- RULES -->
+  <section class="screen" id="sRules">
+    <div class="panel">
+      <div class="h1">Luật chơi</div>
+      <p class="p">
+        1) Tick đồ cần mua.<br>
+        2) Moni cấp ngân sách theo số món + random.<br>
+        3) Vào shop mua đủ món đã tick.<br>
+        4) Không lố ngân sách => thắng.<br><br>
+        <b>Để lấy voucher cao</b>: ưu tiên món quan trọng chọn <b>Thường</b> (hoặc Cao cấp) thay vì quá nhiều Tiết kiệm.
+      </p>
+      <div class="sp"></div>
+      <button class="btn" id="btnRulesBack" type="button">Quay lại</button>
+    </div>
+  </section>
+
+  <!-- ROOM (GROUP) -->
+  <section class="screen" id="sRoom">
+    <div class="panel">
+      <div class="h1">Chế độ nhóm</div>
+      <p class="p">Tạo mã để share (demo). Nếu muốn “vào chung phòng thật” nhiều máy cần Firebase/server.</p>
+
+      <div class="roomBox">
+        <button class="btn" id="btnCreateRoom" type="button">Tạo mã phòng</button>
+
+        <div class="row">
+          <input class="input" id="roomInput" maxlength="6" placeholder="Nhập mã phòng (VD: A1B2C3)" />
+          <button class="copyBtn" id="btnJoinRoom" type="button">Vào</button>
+        </div>
+
+        <div class="panel" id="roomInfo" style="display:none;background:rgba(255,255,255,.75)">
+          <div class="row" style="justify-content:space-between">
+            <div><b>Mã phòng:</b> <span id="roomCode"></span></div>
+            <button class="copyBtn" id="btnCopyLink" type="button">Copy link</button>
+          </div>
+          <div class="small" id="roomTip" style="margin-top:6px"></div>
+          <div class="sp"></div>
+          <button class="btn" id="btnRoomContinue" type="button">Tiếp tục chọn đồ</button>
+        </div>
+
+        <button class="btn secondary" id="btnRoomBack" type="button">Quay lại</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIST -->
+  <section class="screen" id="sList">
+    <div class="panel">
+      <div class="h1">Checklist đồ sắm Tết</div>
+      <p class="p">Món quan trọng có ⭐. Moni sẽ ưu tiên gợi ý những món này để lên voucher cao.</p>
+      <div class="checklist" id="checklist"></div>
+      <div class="sp"></div>
+      <button class="btn" id="btnToBudget" type="button">Tiếp theo</button>
+      <div class="sp"></div>
+      <button class="btn secondary" id="btnBackMode" type="button">Quay lại</button>
+    </div>
+  </section>
+
+  <!-- BUDGET CHAT -->
+  <section class="screen" id="sBudget">
+    <div class="panel">
+      <div class="chat">
+        <div class="bubbleRow right">
+          <div class="bubble user" id="userBubble"></div>
+        </div>
+
+        <div class="bubbleRow">
+          <div class="avatar" style="width:34px;height:34px;border-radius:12px;">m</div>
+          <div>
+            <div class="bubble bot" id="botBubble"></div>
+            <div class="monoSmall">Now</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp"></div>
+      <button class="btn" id="btnEnterShop" type="button">Vào shop</button>
+      <div class="sp"></div>
+      <button class="btn secondary" id="btnBackList" type="button">Quay lại</button>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="screen" id="sShop">
+    <div class="panel shopShell">
+      <div class="shopTop">
+        <div>
+          <div class="h1" style="margin:0">Shop sắm Tết</div>
+          <p class="p" style="margin-top:4px">Mua đủ món đã tick. Xoá khỏi giỏ để hoàn tiền nếu mua nhầm.</p>
+        </div>
+        <div class="chip">Còn lại: <span class="money" id="moneyLeft">0đ</span></div>
+      </div>
+
+      <div class="tabs" id="tabs"></div>
+
+      <div class="shopBody">
+        <div class="grid" id="shopGrid"></div>
+
+        <aside class="side">
+          <b>Giỏ đồ</b>
+          <ul class="bag" id="bagList"></ul>
+
+          <div class="moniBox">
+            <div class="moniLine">
+              <div class="avatar" style="width:34px;height:34px;border-radius:12px;">m</div>
+              <div>
+                <div class="moniText" id="moniText"></div>
+                <div class="moniHint" id="moniHint"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footerActions">
+            <button class="btn secondary" id="btnRestart" type="button">Chơi lại</button>
+            <button class="btn" id="btnFinish" type="button">Chấm điểm</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="sResult">
+    <div class="panel resultBox">
+      <div class="big" id="resultTitle"></div>
+      <p class="p" id="resultDesc"></p>
+      <div class="badgeRow" id="badgeRow"></div>
+      <div class="voucher" id="voucherBox" style="display:none;"></div>
+      <div class="sp"></div>
+      <button class="btn" id="btnPlayAgain" type="button">Chơi lại</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =========================
+   DATA + GAME DESIGN
+========================= */
+const ITEMS = [
+  { id:"banh-chung", name:"Bánh chưng", important:true, note:"Món Tết truyền thống – ưu tiên chất lượng." },
+  { id:"dao",        name:"Cây đào",     important:true, note:"Trang trí Tết – đẹp vừa đủ là ổn." },
+  { id:"quat",       name:"Cây quất",    important:true, note:"May mắn – đừng mua quá rẻ." },
+  { id:"ao-dai",     name:"Áo dài",      important:true, note:"Diện Tết – ưu tiên Thường." },
+  { id:"mut",        name:"Mứt Tết",     important:false,note:"Có thể tiết kiệm để dồn ngân sách." },
+  { id:"hat-dua",    name:"Hạt dưa",     important:false,note:"Món phụ – chọn tiết kiệm được." },
+  { id:"bao-li-xi",  name:"Bao lì xì",   important:false,note:"Món phụ – tiết kiệm ok." },
+  { id:"trang-tri",  name:"Trang trí",   important:false,note:"Đèn/decal… mua vừa phải." },
+];
+
+const TIERS = [
+  { tier:1, label:"Tiết kiệm", emoji:"🟢", quality:1, priceBase:  60000 },
+  { tier:2, label:"Thường",    emoji:"🟡", quality:2, priceBase: 120000 },
+  { tier:3, label:"Cao cấp",   emoji:"🔴", quality:3, priceBase: 210000 },
+];
+
+const state = {
+  mode: null,             // "solo" | "group"
+  room: null,             // code (demo)
+  selected: new Set(),    // item ids
+  requiredNames: [],
+  budget: 0,
+  moneyLeft: 0,
+  bag: [],                // purchases
+  currentTab: null,
+  adviceMemory: [],
+};
+
+/* =========================
+   HELPERS
+========================= */
+const $ = (id)=>document.getElementById(id);
+const vnd = (n)=> n.toLocaleString("vi-VN") + "đ";
+const randInt = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+function setChip(text){ $("chipTop").textContent = text; }
+
+function slugRoom(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out="";
+  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+
+/* =========================
+   CHECKLIST
+========================= */
+function renderChecklist(){
+  const el = $("checklist");
+  el.innerHTML = "";
+  ITEMS.forEach(it=>{
+    const row = document.createElement("label");
+    row.className = "item";
+
+    const cb = document.createElement("input");
+    cb.type="checkbox";
+    cb.checked = state.selected.has(it.id);
+    cb.addEventListener("change", ()=>{
+      if(cb.checked) state.selected.add(it.id);
+      else state.selected.delete(it.id);
+      updateNextBtn();
+    });
+
+    const mid = document.createElement("div");
+    mid.innerHTML = `<b>${it.name}${it.important ? " ⭐" : ""}</b><div class="sub">${it.note}</div>`;
+
+    const tag = document.createElement("div");
+    tag.className = "tag badge" + (it.important ? " important":"");
+    tag.textContent = it.important ? "Ưu tiên: Thường" : "Có thể tiết kiệm";
+
+    row.appendChild(cb);
+    row.appendChild(mid);
+    row.appendChild(tag);
+    el.appendChild(row);
+  });
+  updateNextBtn();
+}
+
+function updateNextBtn(){
+  const n = state.selected.size;
+  $("btnToBudget").textContent = n ? `Tiếp theo (đã chọn ${n} món)` : "Tiếp theo";
+}
+
+/* =========================
+   BUDGET
+========================= */
+function computeBudget(){
+  const n = state.selected.size || 1;
+  const base  = state.mode === "group" ? 320000 : 260000;
+  const perMin= state.mode === "group" ? 105000 : 85000;
+  const perMax= state.mode === "group" ? 135000 : 115000;
+  let budget = base + n * randInt(perMin, perMax);
+  budget += randInt(-20000, 30000);
+  return Math.round(budget/10000)*10000;
+}
+
+function summarizeSelectedNames(){
+  const names = ITEMS.filter(x=>state.selected.has(x.id)).map(x=>x.name);
+  state.requiredNames = names;
+  return names;
+}
+
+/* =========================
+   PRICING
+========================= */
+function tierInfo(tier){ return TIERS.find(x=>x.tier===tier); }
+
+function priceFor(itemId, tier){
+  const it = ITEMS.find(x=>x.id===itemId);
+  const t  = tierInfo(tier);
+  const impBoost = it.important ? 1.10 : 1.00;
+  const jitter = 1 + randInt(-6, 10)/100;
+  const base = t.priceBase * impBoost * jitter;
+  return Math.round(base/1000)*1000;
+}
+
+/* =========================
+   SHOP
+========================= */
+function requiredCategories(){
+  return ITEMS.filter(x=>state.selected.has(x.id)).map(x=>x.id);
+}
+
+function updateMoneyUI(){
+  $("moneyLeft").textContent = vnd(state.moneyLeft);
+}
+
+function bestTierBought(itemId){
+  const items = state.bag.filter(x=>x.itemId===itemId);
+  if(!items.length) return 0;
+  return Math.max(...items.map(x=>x.tier));
+}
+
+function renderTabs(){
+  const tabsEl = $("tabs");
+  tabsEl.innerHTML="";
+  const ids = requiredCategories();
+  if(!ids.length) return;
+
+  if(!state.currentTab) state.currentTab = ids[0];
+
+  ids.forEach(id=>{
+    const it = ITEMS.find(x=>x.id===id);
+    const b = document.createElement("button");
+    b.className = "tab" + (id===state.currentTab ? " active":"");
+    b.type="button";
+    b.textContent = it.name + (it.important ? " ⭐" : "");
+    b.addEventListener("click", ()=>{
+      state.currentTab = id;
+      renderTabs();
+      renderShopGrid();
+      moniAdvise("tab");
+    });
+    tabsEl.appendChild(b);
+  });
+}
+
+function renderShopGrid(){
+  const grid = $("shopGrid");
+  grid.innerHTML = "";
+
+  const itemId = state.currentTab;
+  const it = ITEMS.find(x=>x.id===itemId);
+
+  [1,2,3].forEach(tier=>{
+    const tInfo = tierInfo(tier);
+    const price = priceFor(itemId, tier);
+
+    const card = document.createElement("div");
+    card.className="cardShop";
+
+    const title = document.createElement("b");
+    title.textContent = it.name;
+
+    const meta = document.createElement("div");
+    meta.className="meta";
+    meta.textContent = `${tInfo.emoji} ${tInfo.label} • Giá: ${vnd(price)}`;
+
+    const desc = document.createElement("div");
+    desc.className="meta";
+    desc.textContent =
+      tier===1 ? "Rẻ – đủ dùng – dễ bị thiếu điểm voucher cao"
+      : tier===2 ? "Cân bằng – Moni khuyên chọn"
+      : "Đẹp/xịn – đắt – coi chừng lố ngân sách";
+
+    const buy = document.createElement("button");
+    buy.className="buyBtn";
+    buy.textContent = state.moneyLeft >= price ? "Mua" : "Không đủ tiền";
+    buy.disabled = state.moneyLeft < price;
+    buy.addEventListener("click", ()=> addToBag(itemId, tier, price));
+
+    card.appendChild(title);
+    card.appendChild(meta);
+    card.appendChild(desc);
+    card.appendChild(buy);
+    grid.appendChild(card);
+  });
+}
+
+function renderBag(){
+  const bagEl = $("bagList");
+  bagEl.innerHTML="";
+
+  if(state.bag.length===0){
+    const li = document.createElement("li");
+    li.className="bagItem";
+    li.textContent="Chưa mua gì.";
+    bagEl.appendChild(li);
+    return;
+  }
+
+  state.bag.forEach((x, idx)=>{
+    const li = document.createElement("li");
+    li.className="bagItem";
+
+    const left = document.createElement("div");
+    left.innerHTML = `<b>${x.itemName}</b><small>${x.label} • ${vnd(x.price)}</small>`;
+
+    const rm = document.createElement("button");
+    rm.className="removeBtn";
+    rm.type="button";
+    rm.textContent="Xoá";
+    rm.addEventListener("click", ()=>removeFromBag(idx));
+
+    li.appendChild(left);
+    li.appendChild(rm);
+    bagEl.appendChild(li);
+  });
+}
+
+function addToBag(itemId, tier, price){
+  const it = ITEMS.find(x=>x.id===itemId);
+  const tInfo = tierInfo(tier);
+  state.moneyLeft -= price;
+  state.bag.push({ itemId, itemName: it.name, tier, label: tInfo.label, price, quality: tInfo.quality });
+  updateMoneyUI();
+  renderBag();
+  renderShopGrid();
+  moniAdvise("buy", {itemId, tier, price});
+}
+
+function removeFromBag(index){
+  const removed = state.bag.splice(index,1)[0];
+  state.moneyLeft += removed.price;
+  updateMoneyUI();
+  renderBag();
+  renderShopGrid();
+  moniAdvise("remove", removed);
+}
+
+/* =========================
+   MONI “AI”
+========================= */
+function moniSay(text, hint=""){
+  $("moniText").textContent = text;
+  $("moniHint").textContent = hint;
+}
+
+function remainingRequired(){
+  const requiredIds = requiredCategories();
+  const missing = requiredIds.filter(id=> bestTierBought(id) === 0);
+  return missing.map(id=> ITEMS.find(x=>x.id===id).name);
+}
+
+function countTier(tier){
+  return state.bag.filter(x=>x.tier===tier).length;
+}
+
+function importantProgress(){
+  const importantSelected = ITEMS.filter(x=>x.important && state.selected.has(x.id)).map(x=>x.id);
+  let good = 0;
+  importantSelected.forEach(id=>{
+    if(bestTierBought(id) >= 2) good++;
+  });
+  return { good, total: importantSelected.length };
+}
+
+function voucherThresholds(){
+  const imp = importantProgress();
+  const needGood = Math.min(2, imp.total);
+  return { needGood };
+}
+
+function diversify(lines){
+  const used = new Set(state.adviceMemory.slice(-6));
+  const candidates = lines.filter(x=>!used.has(x));
+  const chosen = candidates.length ? pick(candidates) : pick(lines);
+  state.adviceMemory.push(chosen);
+  return chosen;
+}
+
+function moniAdvise(type, payload){
+  const missing = remainingRequired();
+  const spent = state.budget - state.moneyLeft;
+  const left = state.moneyLeft;
+  const tier1 = countTier(1), tier2 = countTier(2), tier3 = countTier(3);
+  const imp = importantProgress();
+  const { needGood } = voucherThresholds();
+
+  const targetHigh = state.mode === "group" ? "80k" : "30k";
+  const targetMid  = state.mode === "group" ? "50k" : "20k";
+
+  const tooManyCheap = tier1 >= Math.max(3, Math.ceil(state.bag.length*0.6));
+  const overspendRisk = left < Math.round(state.budget*0.20);
+  const hasAnyPremium = tier3 > 0;
+
+  const baseTips = [
+    `Mẹo lấy voucher ${targetHigh}: ưu tiên ${needGood} món ⭐ mức “Thường+”, món phụ có thể “Tiết kiệm”.`,
+    `Muốn ${targetHigh}: nâng “Bánh chưng” hoặc “Áo dài” lên “Thường”, còn lại canh tiền.`,
+    `Bạn đang đi đúng hướng. Giữ ${needGood} món ⭐ ở “Thường+” là khả thi lấy ${targetHigh}.`,
+  ];
+
+  const missingTips = missing.length ? [
+    `Bạn còn thiếu: ${missing.join(", ")}. Mua đủ checklist trước đã nha.`,
+    `Ưu tiên mua đủ món còn thiếu: ${missing.join(", ")}.`,
+  ] : [
+    `Checklist đủ rồi ✅ Giờ tối ưu chất lượng để lên voucher ${targetHigh}.`,
+    `Bạn đã mua đủ ✅ Giờ xem lại món ⭐ để đạt ${targetHigh} nhé.`,
+  ];
+
+  const cheapTips = [
+    `Bạn đang mua nhiều “Tiết kiệm”. Giữ vậy thường chỉ đạt ${targetMid}.`,
+    `Nhiều “Tiết kiệm” quá sẽ tụt điểm voucher. Thử nâng 1–2 món ⭐ lên “Thường”.`,
+  ];
+
+  const premiumTips = [
+    `“Cao cấp” đẹp nhưng đắt. Chỉ nên chọn 1 món “Cao cấp”, còn lại “Thường” sẽ an toàn.`,
+    `Nếu đã có món “Cao cấp”, các món còn lại ưu tiên “Thường” để tránh lố tiền.`,
+  ];
+
+  const riskTips = [
+    `Còn lại ${vnd(left)} thôi 😅 Ưu tiên “Thường” cho món ⭐, món phụ chọn “Tiết kiệm”.`,
+    `Bạn sắp cạn tiền. Gợi ý: Bánh chưng/Đào/Áo dài chọn “Thường”, mứt/bao lì xì chọn “Tiết kiệm”.`,
+  ];
+
+  const removeTips = [
+    `Đã xoá ✅ Hoàn lại ${vnd(payload?.price || 0)}. Giờ cân đối lại được rồi.`,
+    `Xoá hợp lý đó. Mình canh lại ngân sách giúp bạn nhé.`,
+  ];
+
+  let message="", hint="";
+
+  if(type === "remove"){
+    message = diversify(removeTips);
+    hint = diversify(baseTips);
+  } else if(missing.length){
+    message = diversify(missingTips);
+    hint = diversify(baseTips);
+  } else {
+    if(imp.good < needGood){
+      message = `Muốn voucher ${targetHigh}, bạn cần ${needGood} món ⭐ mức “Thường+”. Hiện tại: ${imp.good}/${needGood}.`;
+      hint = `Gợi ý: nâng “Bánh chưng” hoặc “Áo dài” lên “Thường”, món phụ giữ “Tiết kiệm”.`;
+    } else if(tooManyCheap){
+      message = diversify(cheapTips);
+      hint = `Tiết kiệm ${tier1} • Thường ${tier2} • Cao cấp ${tier3}. Nâng 1 món ⭐ lên “Thường” là đẹp.`;
+    } else if(hasAnyPremium && overspendRisk){
+      message = diversify(premiumTips);
+      hint = diversify(riskTips);
+    } else if(overspendRisk){
+      message = diversify(riskTips);
+      hint = diversify(baseTips);
+    } else {
+      message = diversify(baseTips);
+      hint = `Đã chi: ${vnd(spent)} • Còn: ${vnd(left)} • Món ⭐ “Thường+”: ${imp.good}/${needGood}`;
+    }
+  }
+  moniSay(message, hint);
+}
+
+/* =========================
+   EVALUATION + RESULT
+========================= */
+function evaluate(){
+  const missing = remainingRequired();
+  if(missing.length){
+    return { ok:false, title:"Chưa xong 😭", desc:`Bạn còn thiếu: ${missing.join(", ")}.`, voucher:0, badges:["Thiếu món checklist"] };
+  }
+  if(state.moneyLeft < 0){
+    return { ok:false, title:"Lố ngân sách 😭", desc:"Bạn đã chi vượt ngân sách. Thử xoá món đắt hoặc hạ xuống “Thường/Tiết kiệm” nhé.", voucher:0, badges:["Vung tay quá trán"] };
+  }
+
+  const imp = importantProgress();
+  const { needGood } = voucherThresholds();
+  const tier1 = countTier(1);
+  const total = state.bag.length || 1;
+  const cheapRatio = tier1 / total;
+
+  const highVoucher = state.mode === "group" ? 80000 : 30000;
+  const midVoucher  = state.mode === "group" ? 50000 : 20000;
+
+  const qualifiesHigh = (imp.good >= needGood) && (cheapRatio <= 0.55);
+  const voucher = qualifiesHigh ? highVoucher : midVoucher;
+
+  const spent = state.budget - state.moneyLeft;
+  const spentRatio = spent / state.budget;
+
+  const badges = [];
+  badges.push(qualifiesHigh ? "🎯 Chi tiêu thông minh" : "👍 Ổn áp");
+  if(spentRatio >= 0.92 && spentRatio <= 1.00) badges.push("⚖️ Cân bằng hoàn hảo");
+  if(state.moneyLeft >= Math.round(state.budget*0.18)) badges.push("💰 Kỷ luật (còn dư tốt)");
+  if(countTier(3) >= 1) badges.push("✨ Có món xịn");
+  if(cheapRatio >= 0.60) badges.push("🟢 Siêu tiết kiệm");
+
+  return {
+    ok:true,
+    title: qualifiesHigh ? "THẮNG LỚN 🎉" : "THẮNG 👍",
+    desc:`Tổng chi: ${vnd(spent)} / ${vnd(state.budget)} • Còn lại: ${vnd(state.moneyLeft)}`,
+    voucher,
+    badges
+  };
+}
+
+function showResult(res){
+  $("resultTitle").textContent = res.title;
+  $("resultDesc").textContent = res.desc;
+
+  const row = $("badgeRow");
+  row.innerHTML = "";
+  res.badges.forEach(b=>{
+    const s = document.createElement("div");
+    s.className = "badgeChip";
+    s.textContent = b;
+    row.appendChild(s);
+  });
+
+  const vb = $("voucherBox");
+  if(res.ok){
+    vb.style.display = "inline-flex";
+    vb.textContent = `🎁 Voucher: ${vnd(res.voucher)}`;
+  } else {
+    vb.style.display = "none";
+  }
+
+  showScreen("sResult");
+}
+
+/* =========================
+   ROOM (DEMO SHARE)
+========================= */
+function parseHashRoom(){
+  const h = location.hash || "";
+  const m = h.match(/room=([A-Z0-9]{6})/i);
+  return m ? m[1].toUpperCase() : null;
+}
+
+function setRoom(code){
+  state.room = code;
+  $("roomCode").textContent = code;
+  $("roomInfo").style.display = "block";
+  $("roomTip").textContent = `Share link này cho bạn bè (demo): ${location.origin + location.pathname}#room=${code}`;
+}
+
+/* =========================
+   FLOW
+========================= */
+function resetRunKeepMode(){
+  state.selected = new Set();
+  state.requiredNames = [];
+  state.budget = 0;
+  state.moneyLeft = 0;
+  state.bag = [];
+  state.currentTab = null;
+  state.adviceMemory = [];
+  renderChecklist();
+}
+
+function startMode(mode){
+  state.mode = mode;
+  if(mode === "solo"){
+    setChip("Chế độ: Cá nhân");
+    resetRunKeepMode();
+    showScreen("sList");
+  } else {
+    setChip("Chế độ: Nhóm (demo)");
+    showScreen("sRoom");
+  }
+}
+
+function setupBudgetScreen(){
+  const names = summarizeSelectedNames();
+  state.budget = computeBudget();
+  state.moneyLeft = state.budget;
+  state.bag = [];
+  state.currentTab = null;
+  state.adviceMemory = [];
+
+  $("userBubble").textContent = `Mình muốn mua đồ Tết: ${names.join(", ")}.`;
+
+  const targetHigh = state.mode === "group" ? "80k" : "30k";
+  const { needGood } = voucherThresholds();
+
+  $("botBubble").innerHTML =
+    `Okie! Ngân sách của bạn là <b>${vnd(state.budget)}</b> nhé.<br>
+     Mẹo lấy voucher <b>${targetHigh}</b>: chọn ít nhất <b>${needGood}</b> món ⭐ ở mức <b>Thường</b> (hoặc Cao cấp), các món phụ có thể Tiết kiệm.`;
+
+  showScreen("sBudget");
+}
+
+function enterShop(){
+  updateMoneyUI();
+  renderTabs();
+  renderShopGrid();
+  renderBag();
+  moniAdvise("tab");
+  showScreen("sShop");
+}
+
+function hardReset(){
+  state.mode = null;
+  state.room = null;
+  setChip("Chưa chọn chế độ");
+  resetRunKeepMode();
+  $("roomInfo").style.display = "none";
+  $("roomInput").value = "";
+  history.replaceState(null,"",location.pathname);
+  showScreen("sMode");
+}
+
+/* =========================
+   WIRE UI
+========================= */
+$("btnSolo").addEventListener("click", ()=> startMode("solo"));
+$("btnGroup").addEventListener("click", ()=> startMode("group"));
+
+$("btnHow").addEventListener("click", ()=> showScreen("sRules"));
+$("btnRulesBack").addEventListener("click", ()=> showScreen("sMode"));
+
+$("btnBackMode").addEventListener("click", ()=> showScreen("sMode"));
+$("btnBackList").addEventListener("click", ()=> showScreen("sList"));
+
+$("btnToBudget").addEventListener("click", ()=>{
+  if(state.selected.size === 0){
+    alert("Bạn tick ít nhất 1 món để chơi nha!");
+    return;
+  }
+  setupBudgetScreen();
+});
+
+$("btnEnterShop").addEventListener("click", enterShop);
+
+$("btnRoomBack").addEventListener("click", ()=> showScreen("sMode"));
+$("btnCreateRoom").addEventListener("click", ()=> setRoom(slugRoom()));
+$("btnJoinRoom").addEventListener("click", ()=>{
+  const code = ($("roomInput").value || "").trim().toUpperCase();
+  if(!/^[A-Z0-9]{6}$/.test(code)){
+    alert("Mã phòng phải 6 ký tự (A-Z, 0-9).");
+    return;
+  }
+  setRoom(code);
+});
+
+$("btnCopyLink").addEventListener("click", async ()=>{
+  const code = state.room || $("roomCode").textContent;
+  const link = location.origin + location.pathname + `#room=${code}`;
+  try{
+    await navigator.clipboard.writeText(link);
+    $("roomTip").textContent = "✅ Đã copy link. Gửi bạn bè mở link là thấy mã phòng (demo).";
+  }catch{
+    $("roomTip").textContent = "Không copy được. Bạn tự copy link trên thanh địa chỉ nha.";
+  }
+});
+
+$("btnRoomContinue").addEventListener("click", ()=>{
+  resetRunKeepMode();
+  showScreen("sList");
+});
+
+$("btnRestart").addEventListener("click", hardReset);
+$("btnPlayAgain").addEventListener("click", hardReset);
+
+$("btnFinish").addEventListener("click", ()=>{
+  const res = evaluate();
+  if(!res.ok) alert(res.desc);
+  showResult(res);
+});
+
+/* =========================
+   INIT
+========================= */
+(function init(){
+  renderChecklist();
+  const room = parseHashRoom();
+  if(room){
+    startMode("group");
+    setRoom(room);
+  }
+})();
+</script>
+</body>
+</html>
