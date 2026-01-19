@@ -17,11 +17,10 @@
       padding: 16px;
     }
 
-    /* Khung màn hình game dọc */
     .frame{
       position: relative;
       width: min(92vw, var(--maxw));
-      aspect-ratio: 3 / 4;         /* giữ dáng màn hình dọc */
+      aspect-ratio: 3 / 4;
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 18px 60px rgba(0,0,0,.18);
@@ -31,7 +30,6 @@
       touch-action: manipulation;
     }
 
-    /* Ảnh nền màn hình */
     .screen{
       position: absolute;
       inset: 0;
@@ -41,7 +39,6 @@
       pointer-events: none;
     }
 
-    /* Hotspot trong suốt để bấm */
     .hotspot{
       position: absolute;
       background: rgba(255,255,255,0);
@@ -51,9 +48,11 @@
       cursor: pointer;
       border-radius: 18px;
       outline: none;
+
+      /* DEBUG: bật viền để thấy vùng bấm (xong thì xoá 2 dòng này) */
+      /* border: 2px dashed rgba(255, 0, 0, 0.55); */
     }
 
-    /* Focus để test */
     .hotspot:focus-visible{
       box-shadow: 0 0 0 4px rgba(255,255,255,.92),
                   0 0 0 8px rgba(236, 82, 164, .55);
@@ -63,10 +62,6 @@
       .hotspot:hover{ background: rgba(255,255,255,.06); }
     }
 
-    /*
-      VÙNG BẤM (theo %)
-      Nếu ảnh bạn crop khác chút, chỉ cần chỉnh các % này.
-    */
     .hotspot-solo{
       left: 7%;
       right: 7%;
@@ -80,7 +75,6 @@
       height: 26%;
     }
 
-    /* Overlay màn tiếp theo (demo) */
     .overlay{
       position: absolute;
       inset: 0;
@@ -127,19 +121,43 @@
       font-size: 12px;
       opacity: .8;
     }
+
+    /* Hộp báo lỗi ảnh */
+    .img-error{
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.9);
+      color: #7a1e4c;
+      font-size: 13px;
+      display: none;
+    }
+    .img-error.show{ display:block; }
+    code{ background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 8px; }
   </style>
 </head>
 
 <body>
   <main class="frame" aria-label="Màn hình chọn chế độ chơi">
-    <!-- ĐỔI/ĐẢM BẢO ảnh nằm đúng đường dẫn này -->
-    <img class="screen" src="./assets/mode-select.png" alt="Chọn chế độ chơi" />
+    <img
+      class="screen"
+      src="./assets/mode-select.png"
+      alt="Chọn chế độ chơi"
+      onerror="document.getElementById('imgError').classList.add('show')"
+    />
 
-    <!-- Vùng bấm -->
+    <div class="img-error" id="imgError">
+      ❌ Không load được ảnh. Kiểm tra trong repo có file:
+      <br><code>assets/mode-select.png</code>
+      <br>và tên phải đúng 100% (chữ hoa/thường).
+    </div>
+
     <button class="hotspot hotspot-solo" type="button" aria-label="Chọn chế độ Cá nhân"></button>
     <button class="hotspot hotspot-group" type="button" aria-label="Chọn chế độ Nhóm bạn"></button>
 
-    <!-- Demo màn tiếp theo -->
     <div class="overlay" id="overlay">
       <div class="card" role="dialog" aria-modal="true">
         <h2 id="modeTitle">Bạn đã chọn</h2>
@@ -171,27 +189,19 @@
     }
 
     soloBtn.addEventListener("click", () => {
-      openOverlay(
-        "Chế độ: Cá nhân",
-        "Tiếp theo bạn có thể tạo màn: chọn level / bắt đầu chơi / hướng dẫn."
-      );
+      openOverlay("Chế độ: Cá nhân", "Tiếp theo bạn có thể tạo màn: chọn level / bắt đầu chơi / hướng dẫn.");
     });
 
     groupBtn.addEventListener("click", () => {
-      openOverlay(
-        "Chế độ: Nhóm bạn",
-        "Tiếp theo bạn có thể tạo màn: tạo phòng / nhập mã phòng / mời bạn."
-      );
+      openOverlay("Chế độ: Nhóm bạn", "Tiếp theo bạn có thể tạo màn: tạo phòng / nhập mã phòng / mời bạn.");
     });
 
     backBtn.addEventListener("click", closeOverlay);
 
-    // bấm ra ngoài để đóng
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) closeOverlay();
     });
 
-    // ESC để đóng
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeOverlay();
     });
