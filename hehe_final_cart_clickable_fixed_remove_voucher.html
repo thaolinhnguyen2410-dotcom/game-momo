@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Momo – Sắm Tết Thông Minh (v2)</title>
+  <style>
+    :root{
+      --maxw: 480px;
+      --pink:#ec52a4;
+      --pink2:#ff74bd;
+      --bg:#fde7f2;
+      --card: rgba(255,255,255,.92);
+      --text:#5b1c3a;
+      --muted: rgba(91, 28, 58, .68);
+      --shadow: 0 18px 60px rgba(0,0,0,.18);
+      --r: 18px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; margin:0; }
+    body{
+      display:grid; place-items:center;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 16px;
+      color: var(--text);
+    }
+    .app{
+      width:min(92vw,var(--maxw));
+      height: min(90vh, 880px);
+      border-radius: var(--r);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg,#ffd3e6,#fde7f2);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      padding: 14px 14px 12px;
+      display:flex; gap:10px; align-items:center;
+      background: rgba(255,255,255,.45);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,.05);
+      flex: 0 0 auto;
+    }
+    .avatar{
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+      display:grid; place-items:center;
+      font-weight: 900;
+      color: var(--pink);
+      flex: 0 0 auto;
+      user-select:none;
+    }
+    .avatar.small{ width:34px;height:34px;border-radius:12px; }
+    .title{ line-height:1.15; }
+    .title b{ font-size:16px; }
+    .title div{ font-size:12px; color: var(--muted); margin-top:3px; }
+    .chip{
+      margin-left:auto;
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.70);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .screen{ display:none; padding:14px; flex: 1 1 auto; overflow:auto; }
+    .screen.active{ display:block; }
+
+    .panel{
+      background: var(--card);
+      border-radius: var(--r);
+      padding: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .h1{ font-size:18px; font-weight: 1100; margin:0 0 6px; }
+    .p{ margin:0; color: var(--muted); font-size:13px; line-height:1.35; }
+    .sp{ height:12px; }
+
+    .btn{
+      appearance:none; border:none;
+      cursor:pointer;
+      background: var(--pink);
+      color:#fff;
+      font-weight: 1100;
+      border-radius: 14px;
+      padding: 12px 14px;
+      width: 100%;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+    .btn.secondary{
+      background: rgba(236,82,164,.12);
+      color: var(--text);
+      border: 1px solid rgba(236,82,164,.28);
+    }
+
+    .modeGrid{ display:grid; gap:10px; }
+    .bigBtn{
+      border:none; cursor:pointer;
+      border-radius: 18px;
+      padding: 14px 14px;
+      text-align:left;
+      background: rgba(255,255,255,.90);
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      transition: transform .12s ease;
+    }
+    .bigBtn:active{ transform: translateY(2px) scale(.99); }
+    .bigBtn b{ display:block; font-size:16px; }
+    .bigBtn span{ display:block; font-size:12px; color: var(--muted); margin-top:3px; }
+
+    /* Checklist */
+    .infoBox{
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(236,82,164,.10);
+      border: 1px solid rgba(236,82,164,.22);
+    }
+    .infoBox b{ font-weight: 1200; }
+    .checklist{ display:grid; gap:10px; margin-top:10px; }
+    .item{
+      display:flex; gap:10px; align-items:center;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .item input{ width:18px; height:18px; accent-color: var(--pink); }
+    .item .name{ font-weight: 1100; display:flex; align-items:center; gap:8px; }
+    .item .sub{ margin-top:2px; font-size:12px; color: var(--muted); }
+    .badge{
+      margin-left:auto;
+      font-size: 12px;
+      font-weight: 1100;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--text);
+      white-space:nowrap;
+    }
+    .badge.important{
+      background: rgba(236,82,164,.14);
+      border-color: rgba(236,82,164,.32);
+    }
+    .starBtn{
+      border:none; cursor:pointer;
+      border-radius: 999px;
+      width: 34px; height: 34px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(0,0,0,.06);
+      transition: transform .12s ease;
+      user-select:none;
+    }
+    .starBtn:active{ transform: translateY(1px) scale(.99); }
+    .starBtn.on{
+      background: rgba(236,82,164,.16);
+      border-color: rgba(236,82,164,.35);
+    }
+
+    /* Chat */
+    .chat{ display:grid; gap:10px; }
+    .bubbleRow{ display:flex; gap:10px; align-items:flex-end; }
+    .bubbleRow.right{ justify-content:flex-end; }
+    .bubble{
+      max-width: 86%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.3;
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .bubble.user{
+      background: linear-gradient(180deg,var(--pink2),var(--pink));
+      color:#fff;
+      border-top-right-radius: 8px;
+    }
+    .bubble.bot{
+      background: rgba(255,255,255,.94);
+      color: var(--text);
+      border-top-left-radius: 8px;
+    }
+    .monoSmall{ font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Shop */
+    .shopShell{ padding: 0; overflow:hidden; }
+    .shopTop{
+      position: sticky; top: 0;
+      padding: 14px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(255,255,255,.75);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      z-index: 6;
+    }
+    .money{ font-weight:1100; color:#7a1e4c; }
+    .tabs{
+      padding: 10px 14px 0;
+      display:flex; flex-wrap:wrap; gap:8px;
+      background: transparent;
+    }
+    .tab{
+      border:none; cursor:pointer;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-weight: 1100;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+      transition: transform .12s ease;
+    }
+    .tab:active{ transform: translateY(1px); }
+    .tab.active{
+      background: rgba(236,82,164,.16);
+      border-color: rgba(236,82,164,.35);
+      color: var(--text);
+    }
+
+    .shopBody{
+      height: calc(100% - 132px);
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 10px;
+      padding: 10px 14px 14px;
+      overflow:hidden;
+    }
+    @media (max-width: 430px){
+      .shopBody{ grid-template-columns: 1fr; height: calc(100% - 132px); }
+    }
+
+    .grid{
+      overflow:auto;
+      padding-right: 4px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 430px){ .grid{ grid-template-columns: 1fr; } }
+
+    .cardShop{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      display:flex; flex-direction:column; gap:8px;
+      position: relative;
+    }
+    .dealTag{
+      position:absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 11px;
+      font-weight: 1200;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(236,82,164,.16);
+      border: 1px solid rgba(236,82,164,.35);
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+    .miniSvg{
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffd0e3 60%, #ffb2d1);
+      display:grid; place-items:center;
+      border: 1px solid rgba(0,0,0,.06);
+      flex: 0 0 auto;
+    }
+    .miniSvg svg{ width: 28px; height: 28px; }
+    .price{ color: var(--muted); font-weight:1100; }
+    .tier{ font-size: 12px; color: var(--muted); font-weight: 900; }
+    .scoreLine{ font-size: 12px; color: rgba(91, 28, 58, .8); font-weight: 900; }
+
+    .buy{
+      margin-top:auto;
+      border:none; cursor:pointer;
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-weight: 1100;
+      background: var(--pink);
+      color:#fff;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .buy:active{ transform: translateY(2px) scale(.99); filter: brightness(.98); }
+    .buy:disabled{ opacity:.45; cursor:not-allowed; }
+
+    .side{
+      overflow:auto;
+      background: rgba(255,255,255,.80);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      min-height: 220px;
+    }
+
+    .miniPanel{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+    .miniPanel b{ font-weight:1200; }
+
+    .moniBox{
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .moniLine{ display:flex; gap:10px; align-items:flex-start; }
+    .moniText{ font-size: 13px; color: var(--text); line-height: 1.35; }
+    .moniHint{ margin-top:6px; font-size:12px; color: var(--muted); }
+
+    .footerActions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 2px;
+    }
+
+    .tinyBtn{
+      width: 100%;
+      border:none;
+      cursor:pointer;
+      border-radius: 12px;
+      padding: 9px 10px;
+      font-weight: 1100;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.25);
+      color: var(--text);
+      transition: transform .12s ease;
+    }
+    .tinyBtn:active{ transform: translateY(2px) scale(.99); }
+    .tinyBtn:disabled{ opacity:.5; cursor:not-allowed; }
+
+    /* Result */
+    .resultBox{ text-align:center; padding: 10px 6px; }
+    .big{ font-size: 22px; font-weight: 1200; margin: 0 0 6px; }
+    .voucher{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 1200;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.28);
+    }
+
+    .voucherCode{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .voucherCode code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 1200;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--text);
+      letter-spacing: .6px;
+    }
+    a.btnLink{
+      display:block;
+      text-decoration:none;
+    }
+    .badgeRow{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:10px; }
+    .badgeChip{
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(0,0,0,.06);
+      font-weight: 1100;
+      font-size: 12px;
+    }
+  
+    
+    /* ===== Cart (from game3) ===== */
+.bag{
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+      display:grid;
+      gap:8px;
+    }
+    
+.bagItem{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    
+.bagItem small{ color: var(--muted); font-weight: 900; display:block; margin-top:2px; }
+    
+.removeBtn{
+      border: none;
+      cursor: pointer;
+      font-weight: 1100;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(236,82,164,.12);
+      border: 1px solid rgba(236,82,164,.25);
+      color: var(--text);
+      transition: transform .12s ease;
+    }
+    
+.removeBtn:active{ transform: translateY(2px) scale(.99); }
+
+    
+
+  
+    /* ===== Cart click hardening ===== */
+    .bagItem{ position: relative; }
+    .removeBtn{
+      position: relative;
+      z-index: 20;
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="avatar">m</div>
+      <div class="title">
+        <b>Trợ thủ AI - Moni</b>
+        <div>Gợi ý “đẹp mà vừa túi” • Luật rõ ràng • Flow mượt</div>
+      </div>
+      <div class="chip" id="chipTop">Chưa chọn chế độ</div>
+    </div>
+
+    <!-- MODE -->
+    <section class="screen active" id="sMode">
+      <div class="panel">
+        <div class="h1">Chọn chế độ chơi</div>
+        <p class="p">Mua đủ đồ Tết, không lố ngân sách. Moni sẽ gợi ý để bạn đạt voucher cao.</p>
+      </div>
+      <div class="sp"></div>
+      <div class="modeGrid">
+        <button class="bigBtn" id="btnSolo" type="button">
+          <b>Cá nhân</b>
+          <span>Voucher: 20k / 30k</span>
+        </button>
+        <button class="bigBtn" id="btnGroup" type="button">
+          <b>Nhóm (giả lập)</b>
+          <span>Voucher: 50k / 80k • Cần phối hợp “đẹp mà vừa túi”</span>
+        </button>
+      </div>
+      <div class="sp"></div>
+      <button class="btn secondary" id="btnHow" type="button">Luật chơi</button>
+    </section>
+
+    <!-- RULES -->
+    <section class="screen" id="sRules">
+      <div class="panel">
+        <div class="h1">Luật chơi (siêu rõ)</div>
+        <p class="p">
+          1) Tick món cần mua ở Checklist.<br>
+          2) Chọn tối đa <b>2 món quan trọng</b> (nhấn ⭐). Moni sẽ chấm điểm nặng cho 2 món này.<br>
+          3) Vào shop mua từng món theo 3 mức:<br>
+          • <b>Tiết kiệm</b> = chất lượng <b>1/3</b> điểm (rẻ nhất).<br>
+          • <b>Vừa đủ</b> = chất lượng <b>2/3</b> điểm.<br>
+          • <b>Xịn</b> = chất lượng <b>3/3</b> điểm.<br>
+          4) Mua đủ món + không lố tiền => thắng.<br><br>
+          Mẹo lấy voucher cao: chọn <b>Vừa đủ</b> cho món quan trọng, còn lại tiết kiệm thông minh.
+        </p>
+        <div class="sp"></div>
+        <button class="btn" id="btnRulesBack" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <!-- LIST -->
+    <section class="screen" id="sList">
+      <div class="panel">
+        <div class="h1">Checklist đồ sắm Tết</div>
+        <p class="p">Tick món bạn muốn mua. Sau đó chọn tối đa <b>2 món quan trọng</b> bằng nút ⭐.</p>
+
+        <div class="infoBox">
+          <div class="p" style="color:rgba(91, 28, 58, .82)">
+            <b>Chấm điểm chất lượng:</b> Tiết kiệm = <b>1/3</b>, Vừa đủ = <b>2/3</b>, Xịn = <b>3/3</b>.<br>
+            <b>Món quan trọng</b> sẽ được tính điểm nặng hơn ⇒ đừng mua “Tiết kiệm” cho nó nếu muốn voucher cao.
+          </div>
+            <div style="margin-top:8px" class="p"><b>Lưu ý:</b> Bạn cần chọn <b>tối thiểu 4 món</b> để bắt đầu chơi.</div>
+
+        </div>
+
+        <div class="checklist" id="checklist"></div>
+        <div class="sp"></div>
+        <button class="btn" id="btnToBudget" type="button">Tiếp theo</button>
+        <div class="sp"></div>
+        <button class="btn secondary" id="btnBackMode" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <!-- BUDGET CHAT -->
+    <section class="screen" id="sBudget">
+      <div class="panel">
+        <div class="chat">
+          <div class="bubbleRow right">
+            <div class="bubble user" id="bubbleUser"></div>
+          </div>
+
+          <div class="bubbleRow">
+            <div class="avatar small">m</div>
+            <div>
+              <div class="bubble bot" id="bubbleBot"></div>
+              <div class="monoSmall">Now</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn" id="btnEnterShop" type="button">Vào shop</button>
+        <div class="sp"></div>
+        <button class="btn secondary" id="btnBackList" type="button">Quay lại</button>
+      </div>
+    </section>
+
+    <!-- SHOP -->
+    <section class="screen shopShell" id="sShop">
+      <div class="shopTop">
+        <div>
+          <div class="h1" style="margin:0">Shop sắm Tết</div>
+          <p class="p" style="margin-top:4px">Tiền còn lại luôn hiển thị. Bạn có thể xoá món khỏi giỏ để hoàn tiền.</p>
+        </div>
+        <div class="chip">
+          Còn lại: <span class="money" id="moneyLeft">0đ</span>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs"></div>
+
+      <div class="shopBody">
+        <div class="grid" id="shopGrid"></div>
+
+        <aside class="side">
+          <div class="miniPanel" id="progressBox"></div>
+
+          <b>Giỏ đồ</b>
+                    <ul class="bag" id="bagList"></ul>
+
+          <div class="moniBox">
+            <div class="moniLine">
+              <div class="avatar small">m</div>
+              <div>
+                <div class="moniText" id="moniText"></div>
+                <div class="moniHint" id="moniHint"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footerActions">
+            <button class="btn secondary" id="btnRestart" type="button">Chơi lại</button>
+            <button class="btn" id="btnFinish" type="button">Chấm điểm</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="screen" id="sResult">
+      <div class="panel resultBox">
+        <div class="big" id="resultTitle">Kết quả</div>
+        <p class="p" id="resultDesc"></p>
+        <div class="badgeRow" id="badgeRow"></div>
+        <div class="voucher" id="voucherBox" style="display:none;"></div>
+        <div class="voucherCode" id="voucherCodeLine" style="display:none;"></div>
+        <div class="sp"></div>
+        <a class="btn btnLink" id="btnDownloadApp" href="https://apps.apple.com/vn/app/momo-tr%E1%BB%A3-th%E1%BB%A7-t%C3%A0i-ch%C3%ADnh-v%E1%BB%9Bi-ai/id918751511" target="_blank" rel="noopener" style="display:none;">Bấm vào đây tải app để nhận voucher</a>
+
+        <div class="sp"></div>
+        <button class="btn" id="btnPlayAgain" type="button">Chơi lại</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+  // ===== Helpers =====
+  const $$ = (q) => document.querySelector(q);
+  const vnd = (n) => n.toLocaleString("vi-VN") + "đ";
+  const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+
+  // ===== Voucher codes (pre-generate 1000 random codes) =====
+  const voucherCodes = (() => {
+    const set = new Set();
+    const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // avoid O/0/I/1
+    while(set.size < 1000){
+      let s = "MOMO";
+      for(let i=0;i<8;i++){
+        s += chars[randInt(0, chars.length-1)];
+      }
+      set.add(s);
+    }
+    return Array.from(set);
+  })();
+
+  const pickVoucherCode = () => voucherCodes[randInt(0, voucherCodes.length - 1)];
+
+  function show(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    $$(id).classList.add("active");
+  }
+
+  // ===== Game Data =====
+  const checklistItems = [
+    { id:"dao", name:"Cây đào", sub:"Trang trí phòng khách" },
+    { id:"ao-dai", name:"Áo dài", sub:"Diện Tết xinh" },
+    { id:"quat", name:"Cây quất", sub:"May mắn, sung túc" },
+    { id:"mut", name:"Mứt Tết", sub:"Đãi khách" },
+    { id:"banh-chung", name:"Bánh chưng", sub:"Món truyền thống" },
+    { id:"bao-li-xi", name:"Bao lì xì", sub:"Lộc đầu năm" },
+    { id:"nuoc-ngot", name:"Nước ngọt", sub:"Tiếp khách" },
+    { id:"deco", name:"Trang trí", sub:"Dây đèn, decal…" }
+  ];
+
+  const needToCategory = {
+    "dao": "Cây đào",
+    "ao-dai": "Áo dài",
+    "quat": "Cây quất",
+    "mut": "Mứt Tết",
+    "banh-chung": "Đồ ăn",
+    "bao-li-xi": "Phụ kiện",
+    "nuoc-ngot": "Đồ ăn",
+    "deco": "Trang trí"
+  };
+
+  // Tier => Quality score
+  // Tiết kiệm = 1/3, Vừa đủ = 2/3, Xịn = 3/3
+  const tiers = [
+    { id:1, name:"Tiết kiệm", quality: 1/3 },
+    { id:2, name:"Vừa đủ",   quality: 2/3 },
+    { id:3, name:"Xịn",      quality: 3/3 }
+  ];
+
+  const baseCatalog = {
+    "Cây đào": [
+      { sku:"dao-1", name:"Đào mini", base: 100000, tier:1, icon:"peach" },
+      { sku:"dao-2", name:"Đào vừa",  base: 200000, tier:2, icon:"peach" },
+      { sku:"dao-3", name:"Đào to",   base: 300000, tier:3, icon:"peach" }
+    ],
+    "Cây quất": [
+      { sku:"quat-1", name:"Quất mini",  base: 120000, tier:1, icon:"kumquat" },
+      { sku:"quat-2", name:"Quất vừa",   base: 220000, tier:2, icon:"kumquat" },
+      { sku:"quat-3", name:"Quất bonsai",base: 350000, tier:3, icon:"kumquat" }
+    ],
+    "Áo dài": [
+      { sku:"aodai-1", name:"Áo dài basic",   base: 150000, tier:1, icon:"dress" },
+      { sku:"aodai-2", name:"Áo dài hoa",     base: 250000, tier:2, icon:"dress" },
+      { sku:"aodai-3", name:"Áo dài cao cấp", base: 400000, tier:3, icon:"dress" }
+    ],
+    "Mứt Tết": [
+      { sku:"mut-1", name:"Mứt gừng", base: 50000, tier:1, icon:"candy" },
+      { sku:"mut-2", name:"Mứt dừa",  base: 80000, tier:2, icon:"candy" },
+      { sku:"mut-3", name:"Combo mứt",base: 120000,tier:3, icon:"candy" }
+    ],
+    "Đồ ăn": [
+      { sku:"banh-1",  name:"Bánh chưng",      base: 90000, tier:2, icon:"cake" },
+      { sku:"hatdua-1",name:"Hạt dưa",         base: 35000, tier:1, icon:"seed" },
+      { sku:"nuoc-1",  name:"Thùng nước ngọt", base: 60000, tier:1, icon:"drink" }
+    ],
+    "Phụ kiện": [
+      { sku:"lixi-1", name:"Bao lì xì", base: 30000, tier:1, icon:"envelope" },
+      { sku:"decal-1",name:"Decal Tết", base: 40000, tier:1, icon:"spark" },
+      { sku:"den-1",  name:"Dây đèn",   base: 70000, tier:2, icon:"spark" }
+    ],
+    "Trang trí": [
+      { sku:"hoa-1",  name:"Bình hoa",       base: 80000, tier:1, icon:"spark" },
+      { sku:"nen-1",  name:"Nến thơm",       base: 90000, tier:1, icon:"spark" },
+      { sku:"combo-1",name:"Combo trang trí",base: 140000,tier:2, icon:"spark" }
+    ]
+  };
+
+  function iconSvg(type){
+    const common = `fill="none" stroke="rgba(236,82,164,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+    if(type==="peach") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c5 0 8-3 8-7 0-5-5-9-8-12-3 3-8 7-8 12 0 4 3 7 8 7z"/><path ${common} d="M12 9c1-3 3-5 6-6"/></svg>`;
+    if(type==="kumquat") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c4 0 7-3 7-7s-3-10-7-10-7 6-7 10 3 7 7 7z"/><path ${common} d="M12 4c1 1 2 2 4 2"/></svg>`;
+    if(type==="dress") return `<svg viewBox="0 0 24 24"><path ${common} d="M8 4l4 3 4-3"/><path ${common} d="M9 7l-3 5 6 9 6-9-3-5"/><path ${common} d="M12 7v4"/></svg>`;
+    if(type==="candy") return `<svg viewBox="0 0 24 24"><path ${common} d="M8 8c2-2 6-2 8 0s2 6 0 8-6 2-8 0-2-6 0-8z"/><path ${common} d="M6 10l-2-2"/><path ${common} d="M18 10l2-2"/></svg>`;
+    if(type==="cake") return `<svg viewBox="0 0 24 24"><path ${common} d="M4 12h16v8H4z"/><path ${common} d="M6 12c2 2 4 2 6 0s4-2 6 0"/><path ${common} d="M8 7c0 2 2 2 2 0s-2-2 0-4"/><path ${common} d="M14 7c0 2 2 2 2 0s-2-2 0-4"/></svg>`;
+    if(type==="seed") return `<svg viewBox="0 0 24 24"><path ${common} d="M12 21c5-3 7-7 7-11 0-3-2-5-7-7-5 2-7 4-7 7 0 4 2 8 7 11z"/></svg>`;
+    if(type==="drink") return `<svg viewBox="0 0 24 24"><path ${common} d="M7 3h10l-1 18H8L7 3z"/><path ${common} d="M9 7h6"/><path ${common} d="M12 3v4"/></svg>`;
+    if(type==="envelope") return `<svg viewBox="0 0 24 24"><path ${common} d="M4 7h16v12H4z"/><path ${common} d="M4 7l8 7 8-7"/></svg>`;
+    return `<svg viewBox="0 0 24 24"><path ${common} d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>`;
+  }
+
+  // ===== State =====
+  const state = {
+    mode: null, // "solo" | "group"
+    selected: new Set(),
+    important: new Set(), // up to 2
+    budget: 0,
+    moneyLeft: 0,
+    bag: [], // {category, sku, name, price, tier, basePrice, dealOff}
+    catalogRun: {},
+    requiredCategories: [],
+    currentCategory: null,
+    warningsHeeded: 0,
+    warnedExpensive: false,
+    dealSku: null,
+    dealPct: 0
+  };
+
+  const chipTop = $$("#chipTop");
+  const checklistEl = $$("#checklist");
+  const bubbleUser = $$("#bubbleUser");
+  const bubbleBot  = $$("#bubbleBot");
+  const moneyLeftEl = $$("#moneyLeft");
+  const tabsEl = $$("#tabs");
+  const gridEl = $$("#shopGrid");
+  const bagEl  = $$("#bagList");
+
+  // Xoá từng món trong giỏ (event delegation - chống lỗi click không ăn)
+  bagEl.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".removeBtn");
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const idx = Number(btn.getAttribute("data-idx"));
+    if(Number.isFinite(idx)) removeFromBag(idx);
+  }, true);
+  const moniText = $$("#moniText");
+  const moniHint = $$("#moniHint");
+  const progressBox = $$("#progressBox");
+
+  // ===== Checklist =====
+  function renderChecklist(){
+    checklistEl.innerHTML = "";
+
+    checklistItems.forEach(it=>{
+      const row = document.createElement("label");
+      row.className = "item";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = state.selected.has(it.id);
+      cb.addEventListener("change", ()=>{
+        if(cb.checked){
+          state.selected.add(it.id);
+        }else{
+          state.selected.delete(it.id);
+          state.important.delete(it.id); // if untick, auto remove important
+        }
+        renderChecklist();
+      });
+
+      const star = document.createElement("button");
+      star.type = "button";
+      star.className = "starBtn" + (state.important.has(it.id) ? " on" : "");
+      star.title = "Đánh dấu quan trọng";
+      star.textContent = state.important.has(it.id) ? "⭐" : "☆";
+      star.addEventListener("click", (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        if(!state.selected.has(it.id)){
+          // auto tick if user marks important
+          state.selected.add(it.id);
+        }
+        if(state.important.has(it.id)){
+          state.important.delete(it.id);
+        }else{
+          if(state.important.size >= 2){
+            alert("Bạn chỉ chọn tối đa 2 món quan trọng thôi nha!");
+          }else{
+            state.important.add(it.id);
+          }
+        }
+        renderChecklist();
+      });
+
+      const text = document.createElement("div");
+      const isImp = state.important.has(it.id);
+      text.innerHTML = `
+        <div class="name">${it.name} ${isImp ? "<span style='font-size:12px;opacity:.85'>(Quan trọng)</span>" : ""}</div>
+        <div class="sub">${it.sub}</div>
+      `;
+
+      const badge = document.createElement("div");
+      badge.className = "badge" + (isImp ? " important" : "");
+      badge.textContent = isImp ? "Tính điểm nặng" : "Có thể tiết kiệm";
+
+      row.appendChild(cb);
+      row.appendChild(star);
+      row.appendChild(text);
+      row.appendChild(badge);
+      checklistEl.appendChild(row);
+    });
+
+    updateListHint();
+  }
+
+  function updateListHint(){
+    const n = state.selected.size;
+    const imp = state.important.size;
+    const btn = $$("#btnToBudget");
+    btn.textContent = n ? `Tiếp theo (đã chọn ${n} món • quan trọng ${imp}/2)` : "Tiếp theo";
+    btn.disabled = n < 4;
+    btn.style.opacity = btn.disabled ? ".6" : "1";
+  }
+
+  // ===== Budget =====
+  function computeBudget(){
+    const n = Math.max(1, state.selected.size);
+
+    const base = state.mode==="group"
+      ? 420000 + randInt(-30000, 40000)
+      : 280000 + randInt(-20000, 30000);
+
+    const per = state.mode==="group"
+      ? randInt(85000, 125000)
+      : randInt(70000, 115000);
+
+    let budget = base + n * per;
+    return Math.round(budget / 10000) * 10000;
+  }
+
+  function buildCatalogRun(){
+    // 1) Jitter price
+    const run = {};
+    Object.keys(baseCatalog).forEach(cat=>{
+      run[cat] = baseCatalog[cat].map(it=>{
+        const jitter = randInt(-8, 10) / 100;
+        const price = Math.round(it.base * (1 + jitter) / 1000) * 1000;
+        return { ...it, price };
+      });
+    });
+
+    // 2) Deal of the day: random SKU in required categories, discount 5-20%
+    const all = [];
+    state.requiredCategories.forEach(cat => (run[cat]||[]).forEach(x=> all.push({cat, x})));
+    if(all.length){
+      const pick = all[randInt(0, all.length-1)];
+      state.dealSku = pick.x.sku;
+      state.dealPct = randInt(5, 20);
+      const off = 1 - state.dealPct/100;
+      pick.x.price = Math.round(pick.x.price * off / 1000) * 1000;
+    }else{
+      state.dealSku = null;
+      state.dealPct = 0;
+    }
+
+    return run;
+  }
+
+  function computeRequiredCategories(){
+    const cats = new Set();
+    checklistItems.forEach(it=>{
+      if(state.selected.has(it.id)) cats.add(needToCategory[it.id]);
+    });
+    return Array.from(cats);
+  }
+
+  function tierName(t){
+    const found = tiers.find(x=>x.id===t);
+    return found ? found.name : "Vừa đủ";
+  }
+
+  function tierQuality(t){
+    const found = tiers.find(x=>x.id===t);
+    return found ? found.quality : 2/3;
+  }
+
+  function showMoni(text, hint=""){
+    moniText.textContent = text;
+    moniHint.textContent = hint;
+  }
+
+  // ===== Shop UI =====
+  function renderTabs(){
+    tabsEl.innerHTML = "";
+    const cats = [...state.requiredCategories];
+    if(!state.currentCategory) state.currentCategory = cats[0];
+
+    cats.forEach(cat=>{
+      const b = document.createElement("button");
+      b.className = "tab" + (cat === state.currentCategory ? " active" : "");
+      b.type = "button";
+      b.textContent = cat;
+      b.addEventListener("click", ()=>{
+        state.currentCategory = cat;
+        renderTabs();
+        renderGrid();
+        coach("switch_cat");
+      });
+      tabsEl.appendChild(b);
+    });
+  }
+
+  function bestTierIn(cat){
+    const items = state.bag.filter(x=>x.category===cat);
+    if(!items.length) return 0;
+    return Math.max(...items.map(x=>x.tier));
+  }
+
+  function missingCategories(){
+    const boughtCats = new Set(state.bag.map(x=>x.category));
+    return state.requiredCategories.filter(c=>!boughtCats.has(c));
+  }
+
+  function importantCategories(){
+    // important is tracked by checklist item id; map to category
+    const cats = new Set();
+    checklistItems.forEach(it=>{
+      if(state.important.has(it.id)) cats.add(needToCategory[it.id]);
+    });
+    return Array.from(cats);
+  }
+
+  function updateProgress(){
+    const miss = missingCategories();
+    const impCats = importantCategories();
+
+    const boughtCats = new Set(state.bag.map(x=>x.category));
+    const done = state.requiredCategories.filter(c=>boughtCats.has(c)).length;
+    const total = state.requiredCategories.length;
+
+    // current weighted quality preview
+    const q = computeQuality();
+
+    progressBox.innerHTML = `
+      <b>Tiến độ:</b> ${done}/${total} món<br>
+      <span class="p" style="display:block;margin-top:4px">
+        <b>Quan trọng:</b> ${impCats.length ? impCats.join(", ") : "(chưa chọn)"}
+        <br>
+        <b>Điểm chất lượng (tạm tính):</b> ${(q.weightedAvg*3).toFixed(1)}/3
+      </span>
+      ${miss.length ? `<span class="p" style="display:block;margin-top:6px"><b>Còn thiếu:</b> ${miss.join(", ")}</span>` : `<span class="p" style="display:block;margin-top:6px"><b>✅ Đã đủ món!</b> Bạn có thể chấm điểm.</span>`}
+    `;
+  }
+
+  function renderGrid(){
+    gridEl.innerHTML = "";
+    const items = state.catalogRun[state.currentCategory] || [];
+
+    items.forEach(it=>{
+      const card = document.createElement("div");
+      card.className = "cardShop";
+
+      if(it.sku === state.dealSku){
+        const tag = document.createElement("div");
+        tag.className = "dealTag";
+        tag.textContent = `🔥 Deal -${state.dealPct}%`;
+        card.appendChild(tag);
+      }
+
+      const r = document.createElement("div");
+      r.className = "row";
+
+      const icon = document.createElement("div");
+      icon.className = "miniSvg";
+      icon.innerHTML = iconSvg(it.icon);
+
+      const meta = document.createElement("div");
+      meta.innerHTML = `<b>${it.name}</b><div class="tier">${tierName(it.tier)}</div>`;
+
+      r.appendChild(icon);
+      r.appendChild(meta);
+
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = vnd(it.price);
+
+      const score = document.createElement("div");
+      score.className = "scoreLine";
+      score.textContent = `Chất lượng: ${(tierQuality(it.tier)*3).toFixed(0)}/3`;
+
+      const buy = document.createElement("button");
+      buy.className = "buy";
+      buy.type = "button";
+      // Cho phép mua nếu bạn đang có món cùng loại trong giỏ (sẽ được hoàn tiền khi thay thế)
+      const existing = state.bag.find(x => x.category === state.currentCategory);
+      const effectiveMoney = state.moneyLeft + (existing ? existing.price : 0);
+
+      buy.textContent = effectiveMoney >= it.price ? (existing ? "Đổi món" : "Mua") : "Không đủ tiền";
+      buy.disabled = effectiveMoney < it.price;
+      buy.addEventListener("click", ()=> buyItem(state.currentCategory, it));
+
+      card.appendChild(r);
+      card.appendChild(price);
+      card.appendChild(score);
+      card.appendChild(buy);
+      gridEl.appendChild(card);
+    });
+  }
+
+  function updateMoney(){
+    moneyLeftEl.textContent = vnd(state.moneyLeft);
+  }
+  function renderBag(){
+    bagEl.innerHTML = "";
+
+    if(state.bag.length === 0){
+      const li = document.createElement("li");
+      li.className = "bagItem";
+      li.textContent = "Chưa mua gì.";
+      bagEl.appendChild(li);
+      return;
+    }
+
+    state.bag.forEach((x, idx)=>{
+      const li = document.createElement("li");
+      li.className = "bagItem";
+
+      const left = document.createElement("div");
+      left.innerHTML = `<b>${x.category}</b><small>${x.name} • ${vnd(x.price)} • Q${x.tier}${x.dealOff ? ` • Deal -${x.dealOff}%` : ""}</small>`;
+
+      const rm = document.createElement("button");
+      rm.className = "removeBtn";
+      rm.type = "button";
+      rm.textContent = "Xoá";
+      rm.setAttribute("data-idx", String(idx));
+
+      li.appendChild(left);
+      li.appendChild(rm);
+      bagEl.appendChild(li);
+    });
+  }
+
+
+function removeFromBag(index){
+    const removed = state.bag.splice(index, 1)[0];
+    state.moneyLeft += removed.price;
+    updateMoney();
+    renderBag();
+    renderGrid();
+    updateProgress();
+
+    if(state.warnedExpensive && removed.tier === 3){
+      state.warningsHeeded += 1;
+      state.warnedExpensive = false;
+    }
+
+    showMoni(
+      `Đã xoá “${removed.name}”. Hoàn lại ${vnd(removed.price)}.`,
+      "Tip: xoá xong hãy mua lại lựa chọn rẻ hơn/đúng nhu cầu để cân ngân sách."
+    );
+  }
+
+  function buyItem(category, it){
+    // Only keep 1 choice per category: if exists, auto replace (smooth flow)
+    const existingIndex = state.bag.findIndex(x => x.category === category);
+    if(existingIndex >= 0){
+      const old = state.bag.splice(existingIndex, 1)[0];
+      state.moneyLeft += old.price;
+    }
+
+    state.moneyLeft -= it.price;
+    state.bag.push({
+      category,
+      sku: it.sku,
+      name: it.name,
+      price: it.price,
+      tier: it.tier,
+      dealOff: (it.sku === state.dealSku ? state.dealPct : 0)
+    });
+
+    updateMoney();
+    renderBag();
+    renderGrid();
+    updateProgress();
+
+    coach("buy", {category, tier: it.tier, price: it.price});
+  }
+
+  // ===== Coaching (Moni) =====
+  function coach(event, payload={}){
+    const miss = missingCategories();
+    const impCats = importantCategories();
+    const q = computeQuality();
+
+    // 1) if user is at category that is important
+    const curIsImportant = impCats.includes(state.currentCategory);
+
+    // 2) estimate minimal remaining cost (rough: take cheapest item per missing category)
+    let minRemain = 0;
+    miss.forEach(cat=>{
+      const items = state.catalogRun[cat] || [];
+      if(items.length) minRemain += Math.min(...items.map(x=>x.price));
+    });
+
+    const tips = [];
+
+    // Always: quick contextual
+    if(event === "switch_cat"){
+      tips.push({
+        t: `Đang xem: ${state.currentCategory} 👀`,
+        h: curIsImportant
+          ? "Món này bạn đánh dấu QUAN TRỌNG ⇒ ưu tiên “Vừa đủ” (2/3) trở lên nhé."
+          : "Món này không phải quan trọng ⇒ chọn “Tiết kiệm” (1/3) là hợp lý nếu muốn giữ tiền."
+      });
+    }
+
+    // Deal hint
+    if(state.dealSku){
+      tips.push({
+        t: "Hôm nay có 1 món đang giảm giá 🔥",
+        h: "Thấy tag “Deal” thì mua sẽ lời. Thường deal giúp giữ tiền mà vẫn ổn điểm."
+      });
+    }
+
+    // Budget safety
+    if(miss.length && state.moneyLeft < minRemain){
+      tips.push({
+        t: "Cảnh báo: tiền còn lại có thể KHÔNG đủ để mua hết món còn thiếu 😥",
+        h: "Giải pháp nhanh: đổi món không quan trọng về “Tiết kiệm”, hoặc tận dụng món Deal."
+      });
+    }
+
+    // Important item low tier warning
+    if(event === "buy" && payload.category && impCats.includes(payload.category) && payload.tier === 1){
+      tips.push({
+        t: "Bạn vừa mua TIẾT KIỆM cho món QUAN TRỌNG 😅",
+        h: "Tiết kiệm chỉ = 1/3 điểm. Nếu muốn voucher cao, đổi lên “Vừa đủ” cho món quan trọng nhé."
+      });
+    }
+
+    // Encourage finish
+    if(!miss.length){
+      tips.push({
+        t: "✅ Bạn đã mua đủ món!", 
+        h: `Điểm tạm tính: ${(q.weightedAvg*3).toFixed(1)}/3. Bấm “Chấm điểm” để nhận voucher.`
+      });
+    }
+
+    // Gentle general tip
+    tips.push({
+      t: "Mẹo nhanh của Moni 💡",
+      h: impCats.length
+        ? "Ưu tiên 2 món quan trọng ở “Vừa đủ”, còn lại ưu tiên món rẻ nhất/Deal để không vượt ngân sách."
+        : "Bạn chưa chọn món quan trọng. Tip: chọn 1–2 món bạn muốn “đẹp nhất” để Moni chấm điểm đúng gu."
+    });
+
+    const pick = tips[randInt(0, tips.length-1)];
+    showMoni(pick.t, pick.h);
+  }
+
+  // ===== Quality & Result =====
+  function computeQuality(){
+    // Quality per category uses best tier (since only one item per category after replace)
+    const impCats = importantCategories();
+    let wSum = 0;
+    let wTotal = 0;
+
+    state.requiredCategories.forEach(cat=>{
+      const t = bestTierIn(cat);
+      const q = tierQuality(t); // 0..1
+      const w = impCats.includes(cat) ? 2 : 1;
+      wSum += q * w;
+      wTotal += w;
+    });
+
+    const weightedAvg = wTotal ? (wSum / wTotal) : 0;
+    return { weightedAvg, impCats };
+  }
+
+  function computeBadges(res){
+    const badges = [];
+
+    if(res.ok && state.moneyLeft >= state.budget * 0.15) badges.push("🥇 Chi tiêu kỷ luật");
+    if(res.ok && state.moneyLeft <= state.budget * 0.05) badges.push("🎯 Cân bằng hoàn hảo");
+    if(!res.ok) badges.push("💸 Tay tiêu hoang");
+
+    if(state.warningsHeeded >= 1) badges.push("🧠 Nghe lời Moni");
+
+    if(res.ok && res.qualityAvg3 >= 2.3) badges.push("✨ Đẹp mà hợp ví");
+    if(res.ok && res.qualityAvg3 < 2.3) badges.push("🛍️ Tiết kiệm có chiến lược");
+
+    if(state.dealSku && state.bag.some(x=>x.sku===state.dealSku)) badges.push("🔥 Săn deal đỉnh");
+
+    while(badges.length < 2 && res.ok) badges.push("🎀 Người chơi chăm chỉ");
+    return badges.slice(0, 5);
+  }
+
+  function evaluate(){
+    const budget = state.budget;
+    const spent = budget - state.moneyLeft;
+
+    const missing = missingCategories();
+    if(state.moneyLeft < 0){
+      return { ok:false, title:"Bạn THUA rồi 😭", desc:`Bạn đã chi ${vnd(spent)} vượt ngân sách ${vnd(budget)}.`, voucher:0 };
+    }
+    if(missing.length){
+      return { ok:false, title:"Thiếu món 😭", desc:`Bạn còn thiếu: ${missing.join(", ")}.`, voucher:0, canBack:true };
+    }
+
+    const q = computeQuality();
+    const qualityAvg3 = q.weightedAvg * 3; // 0..3
+
+    // Voucher rules (giữ như bản cũ cho dễ hiểu)
+    // Solo: 30k if >= 2.25/3 else 20k
+    // Group: 80k if >= 2.25/3 else 50k
+    let voucher = 0;
+    const hi = qualityAvg3 >= 2.25;
+
+    if(state.mode === "group"){
+      voucher = hi ? 80000 : 50000;
+      return { ok:true, title:"Nhóm thắng 🎉", desc:`Tổng chi: ${vnd(spent)} / ${vnd(budget)} • Điểm chất lượng (có trọng số): ${qualityAvg3.toFixed(1)}/3`, voucher, qualityAvg3 };
+    }
+
+    voucher = hi ? 30000 : 20000;
+    return { ok:true, title:"Bạn thắng 🎉", desc:`Tổng chi: ${vnd(spent)} / ${vnd(budget)} • Điểm chất lượng (có trọng số): ${qualityAvg3.toFixed(1)}/3`, voucher, qualityAvg3 };
+  }
+
+  // ===== Buttons =====
+  $$("#btnHow").addEventListener("click", ()=> show("#sRules"));
+  $$("#btnRulesBack").addEventListener("click", ()=> show("#sMode"));
+
+  $$("#btnSolo").addEventListener("click", ()=>{
+    state.mode = "solo";
+    chipTop.textContent = "Chế độ: Cá nhân";
+    resetRun();
+    show("#sList");
+  });
+
+  $$("#btnGroup").addEventListener("click", ()=>{
+    state.mode = "group";
+    chipTop.textContent = "Chế độ: Nhóm (giả lập)";
+    resetRun();
+    show("#sList");
+  });
+
+  $$("#btnBackMode").addEventListener("click", ()=> show("#sMode"));
+  $$("#btnBackList").addEventListener("click", ()=> show("#sList"));
+
+  $$("#btnToBudget").addEventListener("click", ()=>{
+    if(state.selected.size < 4){
+      alert("Bạn cần chọn tối thiểu 4 món để bắt đầu chơi nhé!");
+      return;
+    }
+// If user didn't pick important: auto suggest default 2 món phổ biến
+    if(state.important.size === 0){
+      // auto pick among selected if possible
+      const pref = ["dao","ao-dai"]; 
+      for(const id of pref){
+        if(state.selected.has(id) && state.important.size < 2) state.important.add(id);
+      }
+    }
+
+    state.requiredCategories = computeRequiredCategories();
+    state.budget = computeBudget();
+    state.moneyLeft = state.budget;
+    state.bag = [];
+    state.currentCategory = null;
+    state.warningsHeeded = 0;
+    state.warnedExpensive = false;
+
+    const names = checklistItems.filter(x=>state.selected.has(x.id)).map(x=>x.name);
+    const impNames = checklistItems.filter(x=>state.important.has(x.id)).map(x=>x.name);
+
+    bubbleUser.textContent = `Mình muốn mua: ${names.join(", ")}.`;
+
+    const modeText = state.mode==="group"
+      ? "Chế độ nhóm: muốn 80k thì ưu tiên “Vừa đủ” cho món quan trọng."
+      : "Mẹo: muốn 30k, ưu tiên “Vừa đủ” cho món quan trọng.";
+
+    bubbleBot.innerHTML = `Okie! Mình cấp ngân sách <b>${vnd(state.budget)}</b> nhé!<br>
+      <span style="font-size:12px;color:rgba(91,28,58,.72)">
+        Món quan trọng: <b>${impNames.length ? impNames.join(", ") : "(chưa chọn)"}</b><br>
+        ${modeText}
+      </span>`;
+
+    show("#sBudget");
+  });
+
+  $$("#btnEnterShop").addEventListener("click", ()=>{
+    state.catalogRun = buildCatalogRun();
+
+    updateMoney();
+    renderBag();
+    renderTabs();
+    renderGrid();
+    updateProgress();
+
+    show("#sShop");
+    coach("enter_shop");
+  });
+
+  $$("#btnFinish").addEventListener("click", ()=>{
+    const res = evaluate();
+
+    if(res.canBack){
+      coach("need_more");
+      alert("Bạn còn thiếu món checklist. Mua đủ rồi bấm Chấm điểm lại nha!");
+      return;
+    }
+
+    $$("#resultTitle").textContent = res.title;
+    $$("#resultDesc").textContent = res.desc;
+
+    const vb = $$("#voucherBox");
+    const vcl = $$("#voucherCodeLine");
+    const dl  = $$("#btnDownloadApp");
+
+    if(res.ok){
+      vb.style.display = "inline-flex";
+      vb.textContent = `🎁 Voucher: ${vnd(res.voucher)}`;
+
+      // show voucher code + download link
+      const code = pickVoucherCode();
+      vcl.style.display = "block";
+      vcl.innerHTML = `Mã voucher của bạn: <code>${code}</code>`;
+      dl.style.display = "block";
+    }else{
+      vb.style.display = "none";
+      vcl.style.display = "none";
+      dl.style.display = "none";
+    }
+
+    const badges = computeBadges(res);
+    const row = $$("#badgeRow");
+    row.innerHTML = "";
+    badges.forEach(b=>{
+      const el = document.createElement("div");
+      el.className = "badgeChip";
+      el.textContent = b;
+      row.appendChild(el);
+    });
+
+    show("#sResult");
+  });
+
+  function resetRun(){
+    state.selected = new Set();
+    state.important = new Set();
+    renderChecklist();
+  }
+
+  $$("#btnRestart").addEventListener("click", ()=> location.reload());
+  $$("#btnPlayAgain").addEventListener("click", ()=> location.reload());
+
+  // init
+  renderChecklist();
+</script>
+</body>
+</html>
