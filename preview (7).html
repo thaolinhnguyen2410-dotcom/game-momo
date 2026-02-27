@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IELTS Vocab Ultimate Pro</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#667eea,#764ba2);
+color:#222;
+}
+h1{
+text-align:center;
+color:white;
+padding:25px 0;
+font-size:32px;
+}
+.container{max-width:1100px;margin:auto;padding:20px;}
+.card{
+background:white;
+border-radius:20px;
+padding:25px;
+margin-bottom:25px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+input,select,textarea{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:10px;
+border:1px solid #ddd;
+}
+button{
+padding:8px 14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin:4px;
+font-weight:600;
+}
+.primary{background:#667eea;color:white}
+.danger{background:#ff4d4f;color:white}
+.success{background:#22c55e;color:white}
+.gray{background:#e5e7eb}
+.folder-btn{
+display:inline-flex;
+align-items:center;
+gap:6px;
+background:#eee;
+padding:6px 12px;
+border-radius:20px;
+margin:4px;
+cursor:pointer;
+}
+.folder-btn.active{
+background:#667eea;
+color:white;
+}
+.flashcard{
+text-align:center;
+padding:40px;
+font-size:22px;
+cursor:pointer;
+border-radius:15px;
+background:linear-gradient(135deg,#fdfbfb,#ebedee);
+}
+.hidden{display:none}
+.tag{
+background:#ddd;
+padding:3px 8px;
+border-radius:10px;
+font-size:12px;
+margin-left:6px;
+}
+</style>
+</head>
+<body>
+
+<h1>📘 IELTS Vocab Ultimate PRO</h1>
+<div class="container">
+
+<div class="card">
+<h3>📁 Folder</h3>
+<input id="folderInput" placeholder="New folder name">
+<button class="primary" onclick="createFolder()">Create</button>
+<button class="danger" onclick="deleteCurrentFolder()">Delete Selected</button>
+<button class="gray" onclick="resetAll()">Reset All</button>
+<div id="folderList"></div>
+</div>
+
+<div class="card">
+<h3>➕ Add Word</h3>
+<input id="word" placeholder="Word">
+<input id="meaning" placeholder="Meaning">
+<input id="example" placeholder="Example">
+<input id="tag" placeholder="Tag">
+<button class="success" onclick="addWord()">Add Word</button>
+<hr>
+<h4>📥 Import List</h4>
+<textarea id="bulkInput" rows="4" placeholder="word - meaning - example - tag"></textarea>
+<button onclick="importBulk()">Import</button>
+</div>
+
+<div class="card">
+<h3>📚 Word List</h3>
+<div id="vocabList"></div>
+</div>
+
+<div class="card">
+<h3>🧠 Flashcard</h3>
+<button onclick="startFlashcard()">Start</button>
+<div id="flashcard" class="flashcard hidden" onclick="flipCard()"></div>
+<br>
+<button onclick="speakWord()">🔊 Pronounce</button>
+</div>
+
+</div>
+
+<script>
+speechSynthesis.onvoiceschanged=function(){}
+
+let folders=JSON.parse(localStorage.getItem("folders"))||{}
+let currentFolder=null
+let flashIndex=0
+
+function save(){localStorage.setItem("folders",JSON.stringify(folders))}
+
+function createFolder(){
+let name=folderInput.value.trim()
+if(!name)return
+if(!folders[name])folders[name]={vocab:[]}
+currentFolder=name
+folderInput.value=""
+save()
+renderFolders()
+}
+
+function deleteCurrentFolder(){
+if(!currentFolder)return alert("Select folder first")
+if(confirm("Delete folder?")){
+delete folders[currentFolder]
+currentFolder=null
+save()
+renderFolders()
+renderVocab()
+}
+}
+
+function resetAll(){
+if(confirm("Reset all data?")){
+folders={}
+currentFolder=null
+save()
+renderFolders()
+renderVocab()
+}
+}
+
+function renderFolders(){
+folderList.innerHTML=""
+Object.keys(folders).forEach(name=>{
+let div=document.createElement("div")
+div.className="folder-btn"+(currentFolder===name?" active":"")
+div.textContent=name
+div.onclick=()=>{currentFolder=name;renderFolders();renderVocab()}
+folderList.appendChild(div)
+})
+}
+
+function addWord(){
+if(!currentFolder)return alert("Select folder")
+folders[currentFolder].vocab.push({
+word:word.value.trim(),
+meaning:meaning.value.trim(),
+example:example.value.trim(),
+tag:tag.value.trim()
+})
+word.value=meaning.value=example.value=tag.value=""
+save()
+renderVocab()
+}
+
+function importBulk(){
+if(!currentFolder)return alert("Select folder")
+let lines=bulkInput.value.split("\n")
+lines.forEach(l=>{
+let parts=l.split("-")
+if(parts.length>=4){
+folders[currentFolder].vocab.push({
+word:parts[0].trim(),
+meaning:parts[1].trim(),
+example:parts[2].trim(),
+tag:parts[3].trim()
+})
+}
+})
+bulkInput.value=""
+save()
+renderVocab()
+}
+
+function renderVocab(){
+vocabList.innerHTML=""
+if(!currentFolder)return
+folders[currentFolder].vocab.forEach((v,i)=>{
+vocabList.innerHTML+=`
+<b>${v.word}</b> - ${v.meaning}
+<span class="tag">${v.tag||""}</span>
+<button onclick="deleteWord(${i})">Delete</button><br>`
+})
+}
+
+function deleteWord(i){
+folders[currentFolder].vocab.splice(i,1)
+save()
+renderVocab()
+}
+
+function startFlashcard(){
+if(!currentFolder)return
+let list=folders[currentFolder].vocab
+if(!list.length)return alert("No words")
+flashIndex=0
+flashcard.classList.remove("hidden")
+flashcard.dataset.state="word"
+flashcard.innerHTML=`<h2>${list[flashIndex].word}</h2>
+<p style="color:gray">Click to show meaning</p>`
+}
+
+function flipCard(){
+let list=folders[currentFolder].vocab
+let v=list[flashIndex]
+if(flashcard.dataset.state==="word"){
+flashcard.dataset.state="meaning"
+flashcard.innerHTML=`<h2>${v.meaning}</h2>
+<p style="color:gray">Click to show example</p>`
+}
+else if(flashcard.dataset.state==="meaning"){
+flashcard.dataset.state="example"
+flashcard.innerHTML=`<h3>${v.word}</h3>
+<p><i>${v.example||"No example"}</i></p>
+<p style="color:gray">Click for next word</p>`
+}
+else{
+flashIndex=(flashIndex+1)%list.length
+flashcard.dataset.state="word"
+flashcard.innerHTML=`<h2>${list[flashIndex].word}</h2>
+<p style="color:gray">Click to show meaning</p>`
+}
+}
+
+function speakWord(){
+if(!currentFolder)return
+let list=folders[currentFolder].vocab
+if(!list.length)return
+let text=list[flashIndex].word
+let voices=speechSynthesis.getVoices()
+let en=voices.find(v=>v.lang==="en-US")||voices.find(v=>v.lang.startsWith("en"))
+let u=new SpeechSynthesisUtterance(text)
+if(en)u.voice=en
+u.rate=0.95
+speechSynthesis.cancel()
+speechSynthesis.speak(u)
+}
+
+renderFolders()
+</script>
+</body>
+</html>
