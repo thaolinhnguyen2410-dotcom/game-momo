@@ -293,7 +293,8 @@ question.textContent="Finished!"
 choices.innerHTML=""
 answerInput.style.display="none"
 feedback.textContent=""
-score.textContent="Correct: "+score+" | Wrong: "+wrongCount+" | Total: "+testWords.length
+document.getElementById("score").textContent =
+"Correct: "+score+" | Wrong: "+wrongCount+" | Total: "+testWords.length
 return
 }
 let v=testWords[testIndex]
