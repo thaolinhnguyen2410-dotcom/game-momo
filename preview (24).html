@@ -351,30 +351,55 @@ setTimeout(nextQuestion,700)
 function addGrammar(){
 let topic=grammarTitle.value.trim()
 if(!topic)return
+
 grammarData.push({
 title:topic,
-explanation:grammarExplanation.value,
-formula:grammarFormula.value,
-example:grammarExample.value
+explanation:grammarExplanation.value.trim(),
+formula:grammarFormula.value.trim(),
+example:grammarExample.value.trim()
 })
+
 grammarTitle.value=""
 grammarExplanation.value=""
 grammarFormula.value=""
 grammarExample.value=""
-saveGrammar();renderGrammar()
+
+saveGrammar()
+renderGrammar()
+}
+
+function editGrammar(i){
+let g=grammarData[i]
+
+let t=prompt("Title:",g.title); if(t!==null)g.title=t
+let e=prompt("Explanation:",g.explanation); if(e!==null)g.explanation=e
+let f=prompt("Formula:",g.formula); if(f!==null)g.formula=f
+let ex=prompt("Example:",g.example); if(ex!==null)g.example=ex
+
+saveGrammar()
+renderGrammar()
+}
+
+function deleteGrammar(i){
+grammarData.splice(i,1)
+saveGrammar()
+renderGrammar()
 }
 
 function renderGrammar(){
 grammarList.innerHTML=""
-grammarData.forEach(g=>{
+
+grammarData.forEach((g,i)=>{
 grammarList.innerHTML+=`
-<b>${g.title}</b>
-<p>${g.explanation}</p>
-<p><i>${g.formula}</i></p>
+<b>${g.title}</b><br>
+<p>${g.explanation || ""}</p>
+<p><i>${g.formula || ""}</i></p>
+<p>${g.example || ""}</p>
+<button onclick="editGrammar(${i})">Edit</button>
+<button onclick="deleteGrammar(${i})">Delete</button>
 <hr>`
 })
 }
-
 renderFolders()
 renderGrammar()
 
