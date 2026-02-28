@@ -82,6 +82,7 @@ button:hover{transform:scale(1.05)}
 <h3>🧠 Flashcard</h3>
 <select id="flashFolderSelect"></select>
 <button onclick="startFlashcard()">Start</button>
+<button onclick="shuffleFlashcard()" class="gray">🔀 Shuffle</button>
 <p id="flashCounter" class="counter"></p>
 <div id="flashcard" class="flashcard hidden" onclick="flipCard()"></div>
 <div style="text-align:center;margin-top:10px;">
@@ -247,6 +248,13 @@ if(!list.length)return alert("Empty folder!")
 flashList=[...list]
 flashIndex=0
 flashcard.classList.remove("hidden")
+showFlashCard()
+}
+function shuffleFlashcard(){
+if(!flashList.length) return alert("Start flashcard first!")
+
+flashList = flashList.sort(()=>0.5-Math.random())
+flashIndex = 0
 showFlashCard()
 }
 function showFlashCard(){
