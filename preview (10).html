@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IELTS Vocab Ultimate PRO X+</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#667eea,#764ba2);
+color:#222;
+}
+h1{
+text-align:center;
+color:white;
+padding:25px 0;
+font-size:32px;
+}
+.container{max-width:1100px;margin:auto;padding:20px;}
+
+.card{
+background:rgba(255,255,255,0.95);
+border-radius:20px;
+padding:25px;
+margin-bottom:25px;
+box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+input,select,textarea{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:10px;
+border:1px solid #ddd;
+}
+
+button{
+padding:8px 14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin:4px;
+font-weight:600;
+transition:0.2s;
+}
+button:hover{transform:scale(1.05)}
+
+.primary{background:#667eea;color:white}
+.success{background:#22c55e;color:white}
+.gray{background:#e5e7eb}
+.danger{background:#ff4d4f;color:white}
+
+.folder-btn{
+display:inline-flex;
+align-items:center;
+background:#eee;
+padding:6px 12px;
+border-radius:20px;
+margin:4px;
+cursor:pointer;
+}
+.folder-btn.active{background:#667eea;color:white}
+.delete-x{margin-left:8px;cursor:pointer;font-weight:bold}
+
+.nav-buttons{text-align:center;margin-bottom:20px}
+.hidden{display:none}
+
+.flashcard{
+text-align:center;
+padding:60px;
+font-size:24px;
+border-radius:20px;
+background:linear-gradient(135deg,#fdfbfb,#ebedee);
+cursor:pointer;
+}
+
+.choice-btn{
+display:block;
+width:100%;
+margin:6px 0;
+background:#e5e7eb;
+}
+
+.tag{
+background:#ddd;
+padding:3px 8px;
+border-radius:10px;
+font-size:12px;
+margin-left:6px;
+}
+
+.pos{
+background:#667eea;
+color:white;
+padding:3px 8px;
+border-radius:10px;
+font-size:12px;
+margin-left:6px;
+}
+</style>
+</head>
+<body>
+
+<h1>📘 IELTS Vocab Ultimate PRO X+</h1>
+
+<div class="container">
+
+<div class="nav-buttons">
+<button class="primary" onclick="showHome()">Home</button>
+<button class="primary" onclick="showFlash()">Flashcard</button>
+<button class="primary" onclick="showTest()">Test</button>
+<button class="primary" onclick="showGrammar()">Grammar</button>
+</div>
+
+<!-- HOME -->
+<div id="homeSection">
+
+<div class="card">
+<h3>📁 Folder</h3>
+<input id="folderInput" placeholder="New folder name">
+<button class="primary" onclick="createFolder()">Create</button>
+<button class="gray" onclick="renameFolder()">Rename</button>
+<div id="folderList"></div>
+</div>
+
+<div class="card">
+<h3>➕ Add Word</h3>
+<input id="word" placeholder="Word">
+<input id="meaning" placeholder="Meaning">
+<input id="example" placeholder="Example">
+<input id="tag" placeholder="Tag">
+<select id="pos">
+<option value="">Part of Speech</option>
+<option>noun</option>
+<option>verb</option>
+<option>adjective</option>
+<option>adverb</option>
+<option>phrase</option>
+<option>other</option>
+</select>
+<button class="success" onclick="addWord()">Add Word</button>
+
+<hr>
+<h4>📥 Import</h4>
+<textarea id="bulkInput" rows="4"
+placeholder="word - meaning - example - tag - pos"></textarea>
+<button onclick="importBulk()">Import</button>
+</div>
+
+<div class="card">
+<h3>📚 Word List</h3>
+<div id="vocabList"></div>
+</div>
+
+</div>
+
+<!-- FLASHCARD -->
+<div id="flashSection" class="hidden">
+<div class="card">
+<h3>🧠 Flashcard</h3>
+<button onclick="startFlashcard()">Start</button>
+<div id="flashcard" class="flashcard hidden" onclick="flipCard()"></div>
+<br>
+<button onclick="speakWord()">🔊 Pronounce</button>
+</div>
+</div>
+
+<!-- TEST -->
+<div id="testSection" class="hidden">
+<div class="card">
+<h3>📝 Test Mode</h3>
+<select id="testMode">
+<option value="vn-en">VN → EN</option>
+<option value="en-vn">EN → VN</option>
+<option value="choice">Multiple Choice</option>
+</select>
+<button onclick="startTest()">Start</button>
+<div id="testArea" class="hidden">
+<h4 id="question"></h4>
+<input id="answerInput">
+<div id="choices"></div>
+<p id="feedback"></p>
+<p id="score"></p>
+</div>
+</div>
+</div>
+
+<!-- GRAMMAR -->
+<div id="grammarSection" class="hidden">
+
+<div class="card">
+<h3>📘 Grammar Library</h3>
+
+<input id="grammarTitle" placeholder="Grammar Topic">
+<textarea id="grammarExplanation" placeholder="Explanation"></textarea>
+<textarea id="grammarFormula" placeholder="Formula"></textarea>
+<textarea id="grammarExample" placeholder="Examples"></textarea>
+
+<button class="success" onclick="addGrammar()">Add Grammar</button>
+<hr>
+<div id="grammarList"></div>
+</div>
+
+<div class="card">
+<h3>✍ Grammar Practice</h3>
+<select id="grammarSelect"></select>
+<button onclick="startGrammarPractice()">Practice</button>
+
+<div id="grammarPracticeArea" class="hidden">
+<h4 id="grammarQuestion"></h4>
+<input id="grammarAnswer">
+<p id="grammarFeedback"></p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+let folders=JSON.parse(localStorage.getItem("folders"))||{}
+let grammarData=JSON.parse(localStorage.getItem("grammarData"))||[]
+
+let currentFolder=null
+let flashIndex=0
+let testWords=[],testIndex=0,score=0
+
+function save(){localStorage.setItem("folders",JSON.stringify(folders))}
+function saveGrammar(){localStorage.setItem("grammarData",JSON.stringify(grammarData))}
+
+function showHome(){hideAll();homeSection.classList.remove("hidden")}
+function showFlash(){hideAll();flashSection.classList.remove("hidden")}
+function showTest(){hideAll();testSection.classList.remove("hidden")}
+function showGrammar(){hideAll();grammarSection.classList.remove("hidden")}
+function hideAll(){
+homeSection.classList.add("hidden")
+flashSection.classList.add("hidden")
+testSection.classList.add("hidden")
+grammarSection.classList.add("hidden")
+}
+
+/* FOLDER */
+function createFolder(){
+let name=folderInput.value.trim()
+if(!name)return
+if(!folders[name])folders[name]={vocab:[]}
+currentFolder=name
+folderInput.value=""
+save();renderFolders()
+}
+function renameFolder(){
+if(!currentFolder)return
+let newName=prompt("New name:",currentFolder)
+if(!newName)return
+folders[newName]=folders[currentFolder]
+delete folders[currentFolder]
+currentFolder=newName
+save();renderFolders()
+}
+function deleteFolder(name){
+if(confirm("Delete folder?")){
+delete folders[name]
+if(currentFolder===name)currentFolder=null
+save();renderFolders();renderVocab()
+}
+}
+function renderFolders(){
+folderList.innerHTML=""
+Object.keys(folders).forEach(name=>{
+let div=document.createElement("div")
+div.className="folder-btn"+(currentFolder===name?" active":"")
+div.innerHTML=name+
+`<span class="delete-x" onclick="event.stopPropagation();deleteFolder('${name}')">❌</span>`
+div.onclick=()=>{currentFolder=name;renderFolders();renderVocab()}
+folderList.appendChild(div)
+})
+}
+
+/* WORD */
+function addWord(){
+if(!currentFolder)return
+folders[currentFolder].vocab.push({
+word:word.value.trim(),
+meaning:meaning.value.trim(),
+example:example.value.trim(),
+tag:tag.value.trim(),
+pos:pos.value
+})
+word.value=meaning.value=example.value=tag.value=""
+pos.value=""
+save();renderVocab()
+}
+function importBulk(){
+if(!currentFolder)return
+bulkInput.value.split("\n").forEach(l=>{
+let p=l.split("-")
+if(p.length>=5){
+folders[currentFolder].vocab.push({
+word:p[0].trim(),
+meaning:p[1].trim(),
+example:p[2].trim(),
+tag:p[3].trim(),
+pos:p[4].trim()
+})
+}
+})
+bulkInput.value=""
+save();renderVocab()
+}
+function renderVocab(){
+vocabList.innerHTML=""
+if(!currentFolder)return
+folders[currentFolder].vocab.forEach((v,i)=>{
+vocabList.innerHTML+=`
+<b>${v.word}</b>
+<span class="pos">${v.pos||""}</span>
+ - ${v.meaning}
+<span class="tag">${v.tag||""}</span>
+<button onclick="deleteWord(${i})">Delete</button><br>`
+})
+}
+function deleteWord(i){
+folders[currentFolder].vocab.splice(i,1)
+save();renderVocab()
+}
+
+/* FLASH */
+function startFlashcard(){
+if(!currentFolder)return
+let list=folders[currentFolder].vocab
+if(!list.length)return
+flashIndex=0
+flashcard.classList.remove("hidden")
+showFlashCard()
+}
+function showFlashCard(){
+let v=folders[currentFolder].vocab[flashIndex]
+flashcard.innerHTML=`<h2>${v.word}</h2><p>Click to flip</p>`
+flashcard.dataset.state="word"
+}
+function flipCard(){
+let list=folders[currentFolder].vocab
+let v=list[flashIndex]
+if(flashcard.dataset.state==="word"){
+flashcard.innerHTML=`<h3>${v.meaning}</h3><p>${v.example||""}</p>`
+flashcard.dataset.state="meaning"
+}else{
+flashIndex=(flashIndex+1)%list.length
+showFlashCard()
+}
+}
+function speakWord(){
+let list=folders[currentFolder].vocab
+if(!list.length)return
+let u=new SpeechSynthesisUtterance(list[flashIndex].word)
+u.lang="en-US"
+speechSynthesis.speak(u)
+}
+
+/* TEST */
+function startTest(){
+if(!currentFolder)return
+testWords=[...folders[currentFolder].vocab]
+testIndex=0;score=0
+testArea.classList.remove("hidden")
+nextQuestion()
+}
+function nextQuestion(){
+if(testIndex>=testWords.length){
+question.textContent="Finished!"
+score.textContent="Score: "+score+"/"+testWords.length
+return
+}
+let v=testWords[testIndex]
+answerInput.value=""
+feedback.textContent=""
+choices.innerHTML=""
+let mode=testMode.value
+
+if(mode==="choice"){
+question.textContent=v.meaning
+answerInput.style.display="none"
+let options=[v.word]
+while(options.length<4){
+let r=testWords[Math.floor(Math.random()*testWords.length)].word
+if(!options.includes(r))options.push(r)
+}
+options.sort(()=>Math.random()-0.5)
+options.forEach(opt=>{
+let b=document.createElement("button")
+b.className="choice-btn"
+b.textContent=opt
+b.onclick=()=>checkAnswer(opt)
+choices.appendChild(b)
+})
+}else{
+answerInput.style.display="block"
+question.textContent=(mode==="vn-en")?"Translate: "+v.meaning:"Meaning of: "+v.word
+}
+}
+answerInput.onkeydown=function(e){
+if(e.key==="Enter")checkAnswer(answerInput.value)
+}
+function checkAnswer(ans){
+let v=testWords[testIndex]
+let correct=(testMode.value==="en-vn")?v.meaning:v.word
+if(ans.toLowerCase().trim()===correct.toLowerCase().trim()){
+score++;feedback.textContent="Correct!"
+}else{
+feedback.textContent="Wrong! Correct: "+correct
+}
+testIndex++
+setTimeout(nextQuestion,800)
+}
+
+/* GRAMMAR */
+function addGrammar(){
+let topic=grammarTitle.value.trim()
+if(!topic)return
+grammarData.push({
+title:topic,
+explanation:grammarExplanation.value,
+formula:grammarFormula.value,
+example:grammarExample.value
+})
+grammarTitle.value=""
+grammarExplanation.value=""
+grammarFormula.value=""
+grammarExample.value=""
+saveGrammar();renderGrammar()
+}
+function renderGrammar(){
+grammarList.innerHTML=""
+grammarSelect.innerHTML=""
+grammarData.forEach((g,i)=>{
+grammarList.innerHTML+=`
+<b>${g.title}</b>
+<button onclick="deleteGrammar(${i})">Delete</button>
+<p>${g.explanation}</p>
+<p><i>${g.formula}</i></p>
+<hr>`
+grammarSelect.innerHTML+=`<option value="${i}">${g.title}</option>`
+})
+}
+function deleteGrammar(i){
+grammarData.splice(i,1)
+saveGrammar();renderGrammar()
+}
+function startGrammarPractice(){
+let i=grammarSelect.value
+if(i==="")return
+let g=grammarData[i]
+grammarPracticeArea.classList.remove("hidden")
+grammarQuestion.textContent="Write formula for: "+g.title
+grammarAnswer.value=""
+grammarFeedback.textContent=""
+}
+grammarAnswer.onkeydown=function(e){
+if(e.key==="Enter"){
+let i=grammarSelect.value
+let g=grammarData[i]
+if(grammarAnswer.value.trim().toLowerCase()===g.formula.trim().toLowerCase()){
+grammarFeedback.textContent="Correct!"
+}else{
+grammarFeedback.textContent="Wrong! Correct: "+g.formula
+}
+}
+}
+
+renderFolders()
+renderGrammar()
+</script>
+</body>
+</html>
