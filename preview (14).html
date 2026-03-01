@@ -192,12 +192,32 @@ alert("Import successful!")
 function renderVocab(){
 vocabList.innerHTML=""
 if(!currentFolder)return
+
 folders[currentFolder].vocab.forEach((v,i)=>{
 vocabList.innerHTML+=`
-<b>${v.word}</b> - ${v.meaning}
+<div style="margin-bottom:25px;padding:15px;border-radius:15px;background:#f9fafb">
+
+<div style="font-size:20px;font-weight:700;margin-bottom:6px;">
+${v.word}
+</div>
+
+<div style="margin-bottom:6px;color:#444;">
+<b>Structure:</b> ${v.meaning}
+</div>
+
+<div style="margin-bottom:6px;color:#555;">
+<b>Example:</b> ${v.example||""}
+</div>
+
+<div style="margin-bottom:10px;">
 <span class="tag">${v.tag||""}</span>
-<button onclick="editWord(${i})">Edit</button>
-<button onclick="deleteWord(${i})">Delete</button><br>`
+</div>
+
+<button onclick="editWord(${i})" class="primary">Edit</button>
+<button onclick="deleteWord(${i})" class="gray">Delete</button>
+
+</div>
+`
 })
 }
 function editWord(i){
